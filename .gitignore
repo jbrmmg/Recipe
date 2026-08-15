@@ -28,6 +28,7 @@ target/
 ui/node_modules/
 ui/dist/
 ui/.angular/
+ui/node
 
 # Node
 node_modules/
