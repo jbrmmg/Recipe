@@ -145,6 +145,21 @@ A step-by-step interactive mode that guides the user through cooking a recipe.
 
 ---
 
+## Primary Device
+
+The application is designed primarily for use on an **iPad or similar tablet** on the home network. Desktop browser support is a secondary goal.
+
+Design implications:
+
+- **Touch-first UI** — all interactive targets (buttons, list items, chips) must be comfortably tappable (≥ 44px). No hover-only interactions.
+- **Overlay navigation** — the side drawer opens as an overlay rather than a persistent panel, preserving screen space.
+- **Responsive layout** — card grids and tables adapt to portrait (768px) and landscape (1024px) tablet widths.
+- **Guided cooking mode** — the most iPad-critical feature. When cooking, the screen must stay awake (Screen Wake Lock API), controls must be large enough to tap with one hand, and audio alarms must work when the browser is in the foreground.
+- **Image capture** — recipe image upload should offer the iPad camera directly via `<input type="file" accept="image/*" capture="environment">`.
+- **Form design** — recipe creation and editing involve complex forms; inputs should be large, favour dropdowns and pickers over free text where possible, and save state to avoid data loss on accidental navigation.
+
+---
+
 ## Infrastructure & Deployment
 
 ### Database Migrations — Liquibase
