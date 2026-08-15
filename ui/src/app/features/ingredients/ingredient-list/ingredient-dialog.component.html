@@ -1,0 +1,66 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Ingredient' : 'Add Ingredient' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ingredient-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. Plain flour">
+      <mat-error>Enter at least 2 characters</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="category">
+        @for (cat of categories; track cat.value) {
+          <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>Category is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Default unit</mat-label>
+      <mat-select formControlName="defaultUnit">
+        @for (unit of units; track unit.value) {
+          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>Unit is required</mat-error>
+    </mat-form-field>
+
+    <div class="purchase-row">
+      <mat-form-field appearance="outline" class="purchase-qty">
+        <mat-label>Purchase quantity</mat-label>
+        <input matInput type="number" formControlName="purchaseQuantity" min="0.001" step="1">
+        <mat-error>Must be greater than 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="purchase-unit">
+        <mat-label>Purchase unit</mat-label>
+        <mat-select formControlName="purchaseUnit">
+          @for (unit of units; track unit.value) {
+            <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Unit is required</mat-error>
+      </mat-form-field>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid">
+    {{ isEdit ? 'Save' : 'Add' }}
+  </button>
+</mat-dialog-actions>
+
+<style>
+  .ingredient-form { display: flex; flex-direction: column; gap: 4px; min-width: 320px; padding-top: 8px; }
+  .full-width { width: 100%; }
+  .purchase-row { display: flex; gap: 12px; }
+  .purchase-qty { flex: 1; }
+  .purchase-unit { flex: 2; }
+</style>

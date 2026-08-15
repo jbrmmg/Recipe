@@ -1,5 +1,70 @@
-<div class="placeholder">
-  <mat-icon>construction</mat-icon>
-  <h2>Ingredients</h2>
-  <p>Coming soon</p>
+<div class="ingredient-page">
+
+  <div class="toolbar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search ingredients</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Type to filter...">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="openDialog()">
+      <mat-icon>add</mat-icon>
+      Add
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" matSort>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+          <td mat-cell *matCellDef="let row">{{ labelFor(row.category, 'category') }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="defaultUnit">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Default unit</th>
+          <td mat-cell *matCellDef="let row">{{ labelFor(row.defaultUnit, 'unit') }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="purchase">
+          <th mat-header-cell *matHeaderCellDef>Purchase</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.purchaseQuantity }} × {{ labelFor(row.purchaseUnit, 'unit') }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row" class="actions-cell">
+            <button mat-icon-button (click)="openDialog(row)" [attr.aria-label]="'Edit ' + row.name">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="delete(row)" [attr.aria-label]="'Delete ' + row.name">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="no-data" [attr.colspan]="displayedColumns.length">
+            {{ searchControl.value ? 'No ingredients match your search' : 'No ingredients yet — add one above' }}
+          </td>
+        </tr>
+
+      </table>
+    </div>
+  }
+
 </div>
