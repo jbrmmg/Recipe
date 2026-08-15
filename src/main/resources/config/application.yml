@@ -43,6 +43,13 @@ management:
   security:
     enabled: false
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    disable-swagger-default-url: true
+
 recipe:
   version: "@project.version@"
   image-location: /tmp/recipe-images

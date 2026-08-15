@@ -18,6 +18,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.38</lombok.version>
         <node.version>v22.14.0</node.version>
+        <skip.frontend>false</skip.frontend>
 
         <sonar.coverage.exclusions>**/RecipeApplication.java</sonar.coverage.exclusions>
         <sonar.organization>jbrmmg</sonar.organization>
@@ -60,7 +61,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>21</release>
+                    <release>17</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

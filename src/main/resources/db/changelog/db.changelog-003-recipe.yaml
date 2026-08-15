@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: '003-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: recipe
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: base_servings
+                  type: INT
+                  defaultValueNumeric: 4
+                  constraints:
+                    nullable: false
+              - column:
+                  name: prep_time
+                  type: INT
+              - column:
+                  name: cook_time
+                  type: INT
+              - column:
+                  name: image_path
+                  type: VARCHAR(500)
+              - column:
+                  name: created_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_modified_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false

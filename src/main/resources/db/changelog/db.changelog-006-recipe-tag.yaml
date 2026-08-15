@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: '006-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: recipe_tag
+            columns:
+              - column:
+                  name: recipe_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_rt_recipe
+                    references: recipe(id)
+                    deleteCascade: true
+              - column:
+                  name: tag_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_rt_tag
+                    references: tag(id)
+                    deleteCascade: true
+        - addPrimaryKey:
+            tableName: recipe_tag
+            columnNames: recipe_id, tag_id
+            constraintName: pk_recipe_tag

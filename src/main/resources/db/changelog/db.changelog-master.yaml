@@ -1,2 +1,19 @@
 databaseChangeLog:
-  - logicalFilePath: db.changelog-master.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-001-ingredient.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-002-tag.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-003-recipe.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-004-recipe-ingredient.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-005-recipe-step.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-006-recipe-tag.yaml

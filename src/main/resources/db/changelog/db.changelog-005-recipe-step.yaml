@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: '005-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: recipe_step
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: recipe_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_rs_recipe
+                    references: recipe(id)
+                    deleteCascade: true
+              - column:
+                  name: phase
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: step_order
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parallel_group
+                  type: INT
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: duration_seconds
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timer_required
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
