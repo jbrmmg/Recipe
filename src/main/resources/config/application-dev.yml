@@ -1,0 +1,31 @@
+logging:
+  level:
+    ROOT: INFO
+    com.jbr.middletier.recipe: DEBUG
+
+spring:
+  datasource:
+    url: ${db.dev.recipe.server}?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${db.dev.recipe.user}
+    password: ${db.dev.recipe.password}
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    show-sql: false
+
+  liquibase:
+    enabled: true
+
+  h2:
+    console:
+      enabled: false
+
+recipe:
+  image-location: /home/jason/Working/RecipeImages
+
+info:
+  app:
+    version: Dev

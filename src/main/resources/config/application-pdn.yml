@@ -1,0 +1,20 @@
+logging:
+  level:
+    ROOT: INFO
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  liquibase:
+    enabled: true
+
+  h2:
+    console:
+      enabled: false
+
+info:
+  app:
+    version: Production

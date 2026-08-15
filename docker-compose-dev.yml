@@ -1,0 +1,25 @@
+services:
+  recipe-dev:
+    image: nexus.jbrmmg.me.uk:8084/recipe-dev:latest
+    container_name: recipe-dev
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=pdn
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
+      - SPRING_H2_CONSOLE_ENABLED=false
+    volumes:
+      - recipe-dev-logs:/app/logs
+      - recipe-dev-images:/app/images
+    networks:
+      - jbr-network
+
+volumes:
+  recipe-dev-logs:
+  recipe-dev-images:
+
+networks:
+  jbr-network:
+    external: true
