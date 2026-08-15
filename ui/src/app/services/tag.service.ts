@@ -12,4 +12,16 @@ export class TagService {
   getAll(): Observable<Tag[]> {
     return this.http.get<Tag[]>(this.url);
   }
+
+  create(name: string): Observable<Tag> {
+    return this.http.post<Tag>(this.url, { name });
+  }
+
+  update(id: number, name: string): Observable<Tag> {
+    return this.http.put<Tag>(`${this.url}/${id}`, { name });
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
+  }
 }

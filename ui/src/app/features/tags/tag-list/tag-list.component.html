@@ -1,5 +1,77 @@
-<div class="placeholder">
-  <mat-icon>construction</mat-icon>
-  <h2>Tags</h2>
-  <p>Coming soon</p>
+<div class="tag-page">
+
+  <div class="add-row">
+    <mat-form-field appearance="outline" class="add-field">
+      <mat-label>New tag</mat-label>
+      <input matInput [formControl]="newTagControl"
+             placeholder="e.g. vegetarian"
+             (keyup.enter)="addTag()">
+      <mat-error>Enter at least 2 characters</mat-error>
+    </mat-form-field>
+    <button mat-raised-button color="primary"
+            (click)="addTag()"
+            [disabled]="newTagControl.invalid || saving()">
+      <mat-icon>add</mat-icon>
+      Add
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (tags().length === 0) {
+    <div class="empty-state">
+      <mat-icon>label_off</mat-icon>
+      <p>No tags yet — add one above</p>
+    </div>
+  } @else {
+    <mat-list>
+      @for (tag of tags(); track tag.id; let last = $last) {
+        <mat-list-item>
+          <mat-icon matListItemIcon>label</mat-icon>
+
+          @if (editingId() === tag.id) {
+            <mat-form-field appearance="outline" class="edit-field" matListItemTitle>
+              <input matInput [formControl]="editControl"
+                     (keyup.enter)="saveEdit(tag)"
+                     (keyup.escape)="cancelEdit()">
+            </mat-form-field>
+          } @else {
+            <span matListItemTitle>{{ tag.name }}</span>
+          }
+
+          <div matListItemMeta class="action-buttons">
+            @if (editingId() === tag.id) {
+              <button mat-icon-button color="primary"
+                      (click)="saveEdit(tag)"
+                      [disabled]="editControl.invalid"
+                      aria-label="Save">
+                <mat-icon>check</mat-icon>
+              </button>
+              <button mat-icon-button (click)="cancelEdit()" aria-label="Cancel">
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <button mat-icon-button
+                      (click)="startEdit(tag)"
+                      [attr.aria-label]="'Edit ' + tag.name">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn"
+                      (click)="deleteTag(tag)"
+                      [attr.aria-label]="'Delete ' + tag.name">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </div>
+
+        </mat-list-item>
+        @if (!last) {
+          <mat-divider />
+        }
+      }
+    </mat-list>
+  }
+
 </div>
