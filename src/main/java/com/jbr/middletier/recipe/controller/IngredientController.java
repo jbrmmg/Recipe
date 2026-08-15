@@ -17,12 +17,12 @@ public class IngredientController {
     private final IngredientService ingredientService;
 
     @GetMapping
-    public List<IngredientDto> getAll(@RequestParam(required = false) String search) {
+    public List<IngredientDto> getAll(@RequestParam(name = "search", required = false) String search) {
         return ingredientService.findAll(search);
     }
 
     @GetMapping("/{id}")
-    public IngredientDto getById(@PathVariable Long id) {
+    public IngredientDto getById(@PathVariable("id") Long id) {
         return ingredientService.findById(id);
     }
 
@@ -33,13 +33,13 @@ public class IngredientController {
     }
 
     @PutMapping("/{id}")
-    public IngredientDto update(@PathVariable Long id, @Valid @RequestBody IngredientDto dto) {
+    public IngredientDto update(@PathVariable("id") Long id, @Valid @RequestBody IngredientDto dto) {
         return ingredientService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         ingredientService.delete(id);
     }
 }

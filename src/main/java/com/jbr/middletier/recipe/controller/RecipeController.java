@@ -20,18 +20,18 @@ public class RecipeController {
 
     @GetMapping
     public List<RecipeSummaryDto> getAll(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long tagId) {
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "tagId", required = false) Long tagId) {
         return recipeService.findAll(search, tagId);
     }
 
     @GetMapping("/{id}")
-    public RecipeDetailDto getById(@PathVariable Long id) {
+    public RecipeDetailDto getById(@PathVariable("id") Long id) {
         return recipeService.findById(id);
     }
 
     @GetMapping("/by-ingredient")
-    public List<RecipeSummaryDto> findByIngredients(@RequestParam List<Long> ingredientIds) {
+    public List<RecipeSummaryDto> findByIngredients(@RequestParam(name = "ingredientIds") List<Long> ingredientIds) {
         return recipeService.findByIngredients(ingredientIds);
     }
 
@@ -42,13 +42,13 @@ public class RecipeController {
     }
 
     @PutMapping("/{id}")
-    public RecipeDetailDto update(@PathVariable Long id, @Valid @RequestBody RecipeDto dto) {
+    public RecipeDetailDto update(@PathVariable("id") Long id, @Valid @RequestBody RecipeDto dto) {
         return recipeService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         recipeService.delete(id);
     }
 }

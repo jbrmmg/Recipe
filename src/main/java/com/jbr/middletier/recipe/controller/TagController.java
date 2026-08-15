@@ -22,7 +22,7 @@ public class TagController {
     }
 
     @GetMapping("/{id}")
-    public TagDto getById(@PathVariable Long id) {
+    public TagDto getById(@PathVariable("id") Long id) {
         return tagService.findById(id);
     }
 
@@ -33,13 +33,13 @@ public class TagController {
     }
 
     @PutMapping("/{id}")
-    public TagDto update(@PathVariable Long id, @Valid @RequestBody TagDto dto) {
+    public TagDto update(@PathVariable("id") Long id, @Valid @RequestBody TagDto dto) {
         return tagService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         tagService.delete(id);
     }
 }

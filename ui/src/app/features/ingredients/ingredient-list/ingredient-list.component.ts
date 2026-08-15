@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { IngredientService } from '../../../services/ingredient.service';
 import { Ingredient, INGREDIENT_CATEGORIES, MEASUREMENT_UNITS } from '../../../models/ingredient.model';
 import { IngredientDialogComponent } from './ingredient-dialog.component';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-ingredient-list',
@@ -96,13 +97,18 @@ export class IngredientListComponent implements OnInit, AfterViewInit {
   }
 
   delete(ingredient: Ingredient) {
-    this.ingredientService.delete(ingredient.id).subscribe({
-      next: () => {
-        this.dataSource.data = this.dataSource.data.filter(i => i.id !== ingredient.id);
-        this.snackBar.open(`"${ingredient.name}" deleted`, 'Close', { duration: 2000 });
-      },
-      error: () =>
-        this.snackBar.open(`Cannot delete "${ingredient.name}" — it may be used in recipes`, 'Close', { duration: 4000 })
+    this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Delete ingredient', message: `Delete "${ingredient.name}"?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.ingredientService.delete(ingredient.id).subscribe({
+        next: () => {
+          this.dataSource.data = this.dataSource.data.filter(i => i.id !== ingredient.id);
+          this.snackBar.open(`"${ingredient.name}" deleted`, 'Close', { duration: 2000 });
+        },
+        error: () =>
+          this.snackBar.open(`Cannot delete "${ingredient.name}" — it may be used in recipes`, 'Close', { duration: 4000 })
+      });
     });
   }
 

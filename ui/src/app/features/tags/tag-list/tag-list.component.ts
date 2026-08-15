@@ -8,8 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog } from '@angular/material/dialog';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-tag-list',
@@ -29,6 +31,7 @@ import { Tag } from '../../../models/tag.model';
 export class TagListComponent implements OnInit {
   private tagService = inject(TagService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   tags = signal<Tag[]>([]);
   loading = signal(true);
@@ -100,13 +103,18 @@ export class TagListComponent implements OnInit {
   }
 
   deleteTag(tag: Tag) {
-    this.tagService.delete(tag.id).subscribe({
-      next: () => {
-        this.tags.update(tags => tags.filter(t => t.id !== tag.id));
-        this.snackBar.open(`"${tag.name}" deleted`, 'Close', { duration: 2000 });
-      },
-      error: () =>
-        this.snackBar.open(`Cannot delete "${tag.name}" — it may be assigned to recipes`, 'Close', { duration: 4000 })
+    this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Delete tag', message: `Delete "${tag.name}"?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.tagService.delete(tag.id).subscribe({
+        next: () => {
+          this.tags.update(tags => tags.filter(t => t.id !== tag.id));
+          this.snackBar.open(`"${tag.name}" deleted`, 'Close', { duration: 2000 });
+        },
+        error: () =>
+          this.snackBar.open(`Cannot delete "${tag.name}" — it may be assigned to recipes`, 'Close', { duration: 4000 })
+      });
     });
   }
 }
