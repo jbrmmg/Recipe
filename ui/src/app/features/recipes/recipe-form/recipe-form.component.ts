@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -127,10 +127,20 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
+  private ingredientSelectedValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const v = control.value;
+      if (!v || typeof v !== 'object' || !v.id) {
+        return { ingredientNotSelected: true };
+      }
+      return null;
+    };
+  }
+
   private makeIngredientGroup(data?: RecipeIngredient): FormGroup {
     const matched = data ? this.allIngredients().find(i => i.id === data.ingredientId) ?? null : null;
     return this.fb.group({
-      ingredient: [matched, Validators.required],
+      ingredient: [matched, [Validators.required, this.ingredientSelectedValidator()]],
       quantity: [data?.quantity ?? null, [Validators.required, Validators.min(0.001)]],
       unit: [data?.unit ?? '', Validators.required],
       notes: [data?.notes ?? ''],
@@ -234,7 +244,7 @@ export class RecipeFormComponent implements OnInit {
       cookTime: v.cookTime ?? undefined,
       tagIds: v.tagIds ?? [],
       ingredients: (v.ingredients as any[]).map(i => ({
-        ingredientId: (i.ingredient as Ingredient).id,
+        ingredientId: (i.ingredient as Ingredient)?.id,
         quantity: i.quantity,
         unit: i.unit,
         notes: i.notes || undefined,

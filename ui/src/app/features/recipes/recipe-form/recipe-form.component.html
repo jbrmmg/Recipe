@@ -100,8 +100,8 @@
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
-                @if (group.get('ingredient')?.hasError('required') && group.get('ingredient')?.touched) {
-                  <mat-error>Required</mat-error>
+                @if (group.get('ingredient')?.invalid && group.get('ingredient')?.touched) {
+                  <mat-error>Select an ingredient from the list</mat-error>
                 }
               </mat-form-field>
 

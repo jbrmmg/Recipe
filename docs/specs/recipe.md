@@ -72,6 +72,23 @@ A centrally managed list of tags, assigned to recipes to support search and filt
 
 > Tags are managed via a dedicated Tag Management screen and then assigned to recipes. They are not free-text per recipe.
 
+### Meal
+A named collection of one or more recipes served together as a single meal occasion (e.g. "Sunday Roast" = roast chicken + roast potatoes + gravy + Yorkshire puddings, or simply "Spaghetti Bolognese" as a single-recipe meal).
+
+- Name
+- Recipes (ordered list — each entry references a recipe and specifies the serving count for that recipe within this meal)
+- Notes (optional — e.g. "use leftover roast for Monday's sandwiches")
+
+> A Meal is a reusable template. The same Meal can appear in multiple Meal Plans. A single-recipe dish does not need any special treatment — a Meal with one recipe is perfectly valid.
+
+### Meal Plan
+A named, open-ended collection of planned meals. There is no fixed period or required number of meals — you might plan just the weekend, a few weekday dinners, or a full week, whatever is useful at the time.
+
+- Name / label (e.g. "Weekend 16 Aug", "Next week")
+- Planned meals (ordered list — each entry references a Meal and has an optional date or day label such as "Saturday dinner")
+
+> The Meal Plan is the primary driver for both shopping list generation and guided cooking. Plan as many or as few meals as you like, generate one shopping list covering all of them, then cook each meal in turn with guided assistance.
+
 ---
 
 ## Features
@@ -87,25 +104,37 @@ A centrally managed list of tags, assigned to recipes to support search and filt
 - **Find by ingredient** — Search for recipes that contain **all** of the supplied ingredients
 - **Filter** — Filter recipe list by tag, total time, etc.
 
-### Phase 2 — Guided Cooking Mode
+### Phase 2 — Meal Planning
 
-A step-by-step interactive mode that guides the user through cooking a recipe.
+- **Meal CRUD** — Create and manage reusable meals (named collections of recipes with per-recipe serving counts)
+- **Meal Plan CRUD** — Create a weekly (or other period) plan by selecting meals and assigning them to days
+- **Meal plan view** — Overview of the week showing each day's meal and the recipes it contains
 
-- **Serving size selection** — Before starting, choose how many people you are cooking for; all ingredient quantities scale proportionally from the base serving size
+### Phase 3 — Shopping List
+
+Driven by a Meal Plan rather than ad-hoc recipe selection.
+
+- Select a Meal Plan (or a subset of its meals)
+- **Generate shopping list** — aggregates ingredient quantities across all recipes in all selected meals, scaled to each recipe's planned serving count
+- Groups shopping list items by ingredient category (e.g. Dairy, Produce, Spices)
+- Uses purchase quantity from the ingredient master list to suggest how many packs/units to buy (e.g. "800g flour needed → buy 2 × 500g bags")
+- Ability to mark items as already in stock to exclude them from the list
+
+### Phase 4 — Guided Cooking Mode
+
+Cooking is initiated from a Meal Plan — the user picks a planned meal and cooks through its recipes with step-by-step guidance.
+
+- **Meal selection** — from the Meal Plan, choose which meal to cook today
+- **Recipe sequence** — the meal's recipes are displayed in order; the user works through them one at a time (or can jump between them)
+- **Serving size confirmation** — confirm or adjust the serving count per recipe before starting
+- All ingredient quantities scale proportionally from the base serving size
 - Display current step(s) — shows one step at a time, or multiple steps simultaneously if in a parallel group
 - **Per-step timer** — countdown for steps that have a duration
 - **Alarm** — both a browser notification and an audio beep when a timed step completes and the next is due
 - **Pause / Resume** — pause all active timers; resume from where you left off
-- **Progress indicator** — shows where you are in the recipe (e.g. step 3 of 8)
+- **Progress indicator** — shows where you are in the recipe (e.g. step 3 of 8) and which recipe within the meal
 - Separate display for Prep phase and Cook phase
-
-### Phase 3 — Shopping List
-
-- Select one or more recipes (and the serving size for each)
-- **Generate shopping list** — aggregates ingredient quantities across selected recipes, scaled to chosen serving sizes
-- Groups shopping list items by ingredient category (e.g. Dairy, Produce, Spices)
-- Uses purchase quantity from the ingredient master list to suggest how many packs/units to buy (e.g. "800g flour needed → buy 2 × 500g bags")
-- Ability to mark items as already in stock to exclude them from the list
+- **Screen Wake Lock** — keeps the iPad screen on while cooking mode is active
 
 ---
 
@@ -138,10 +167,28 @@ A step-by-step interactive mode that guides the user through cooking a recipe.
 | DELETE | `/api/recipes/{id}` | Delete a recipe |
 | GET | `/api/recipes/by-ingredient` | Find recipes containing all given ingredient IDs |
 
+### Meals
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/meals` | List all meals |
+| GET | `/api/meals/{id}` | Get meal detail (with recipes) |
+| POST | `/api/meals` | Create a meal |
+| PUT | `/api/meals/{id}` | Update a meal |
+| DELETE | `/api/meals/{id}` | Delete a meal |
+
+### Meal Plans
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/meal-plans` | List all meal plans |
+| GET | `/api/meal-plans/{id}` | Get meal plan detail (with meals and recipes) |
+| POST | `/api/meal-plans` | Create a meal plan |
+| PUT | `/api/meal-plans/{id}` | Update a meal plan |
+| DELETE | `/api/meal-plans/{id}` | Delete a meal plan |
+
 ### Shopping List
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/shopping-list` | Generate a shopping list from recipe IDs + serving sizes |
+| POST | `/api/shopping-list` | Generate a shopping list from a meal plan (or subset of meals) |
 
 ---
 
@@ -224,3 +271,7 @@ location /recipe/ {
 | 3 | "Find by ingredient" returns recipes containing **all** supplied ingredients |
 | 4 | Recipes define a base serving size; quantities scale proportionally in guided cooking mode |
 | 5 | Tags are a centrally managed list (tag management screen); assigned to recipes, not free-text |
+| 6 | A Meal is a reusable named collection of one or more recipes; a single-recipe dinner is a valid Meal |
+| 7 | A Meal Plan is an open-ended named collection of planned meals — no fixed period or minimum number of meals |
+| 8 | Shopping list generation is driven by a Meal Plan, not by ad-hoc recipe selection |
+| 9 | Guided cooking is initiated from a Meal Plan — the user picks which planned meal to cook |

@@ -21,6 +21,7 @@ export const MEASUREMENT_UNITS = [
   { value: 'PINCH',      label: 'Pinch' },
   { value: 'SLICE',      label: 'Slice' },
   { value: 'HANDFUL',    label: 'Handful' },
+  { value: 'CENTIMETRE', label: 'Centimetre (cm)' },
 ];
 
 export const INGREDIENT_CATEGORIES = [

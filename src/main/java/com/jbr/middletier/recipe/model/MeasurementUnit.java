@@ -13,5 +13,6 @@ public enum MeasurementUnit {
     PACK,
     PINCH,
     SLICE,
-    HANDFUL
+    HANDFUL,
+    CENTIMETRE
 }
