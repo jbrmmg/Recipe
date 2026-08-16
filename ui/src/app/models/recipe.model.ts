@@ -1,3 +1,5 @@
+import { Tag } from './tag.model';
+
 export interface RecipeSummary {
   id: number;
   title: string;
@@ -10,24 +12,33 @@ export interface RecipeSummary {
 }
 
 export interface RecipeIngredient {
+  id?: number;
   ingredientId: number;
-  ingredientName: string;
+  ingredientName?: string;
   quantity: number;
   unit: string;
   notes?: string;
 }
 
 export interface RecipeStep {
-  id: number;
+  id?: number;
   phase: 'PREP' | 'COOK';
   stepOrder: number;
   parallelGroup?: number;
   description: string;
-  durationSeconds?: number;
+  durationSeconds: number;
   timerRequired: boolean;
 }
 
-export interface RecipeDetail extends RecipeSummary {
+export interface RecipeDetail {
+  id: number;
+  title: string;
+  description?: string;
+  baseServings: number;
+  prepTime?: number;
+  cookTime?: number;
+  imagePath?: string;
+  tags: Tag[];
   ingredients: RecipeIngredient[];
   steps: RecipeStep[];
   createdDate: string;

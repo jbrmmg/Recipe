@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { RecipeService } from '../../../services/recipe.service';
@@ -13,6 +14,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-recipe-list',
@@ -32,6 +36,9 @@ import { MatButtonModule } from '@angular/material/button';
 export class RecipeListComponent implements OnInit {
   private recipeService = inject(RecipeService);
   private tagService = inject(TagService);
+  private router = inject(Router);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   recipes = signal<RecipeSummary[]>([]);
   tags = signal<Tag[]>([]);
@@ -70,6 +77,29 @@ export class RecipeListComponent implements OnInit {
 
   onTagFilterChange(event: MatChipListboxChange) {
     this.selectedTags.set(event.value ?? []);
+  }
+
+  createRecipe() {
+    this.router.navigate(['/recipes/new']);
+  }
+
+  editRecipe(recipe: RecipeSummary) {
+    this.router.navigate(['/recipes', recipe.id, 'edit']);
+  }
+
+  deleteRecipe(recipe: RecipeSummary) {
+    this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Delete recipe', message: `Delete "${recipe.title}"? This cannot be undone.` }
+    }).afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.recipeService.delete(recipe.id).subscribe({
+        next: () => {
+          this.recipes.update(list => list.filter(r => r.id !== recipe.id));
+          this.snackBar.open(`"${recipe.title}" deleted`, 'Close', { duration: 2000 });
+        },
+        error: () => this.snackBar.open('Failed to delete recipe', 'Close', { duration: 3000 })
+      });
+    });
   }
 
   formatTime(minutes: number | undefined): string {

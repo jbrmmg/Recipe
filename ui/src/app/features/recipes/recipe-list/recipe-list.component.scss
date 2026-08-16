@@ -3,6 +3,22 @@
   margin: 0 auto;
 }
 
+.top-toolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  .search-field {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+}
+
 .search-field {
   width: 100%;
   margin-bottom: 8px;

@@ -1,0 +1,139 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+.recipe-form {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+  }
+}
+
+.header-actions,
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  mat-spinner {
+    display: inline-block;
+  }
+}
+
+.bottom-actions {
+  justify-content: flex-end;
+  padding-bottom: 32px;
+}
+
+.form-card {
+  mat-card-content {
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tags */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.empty-hint {
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Ingredient rows */
+.ingredient-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .ingredient-name { flex: 2; min-width: 180px; }
+  .ingredient-qty  { flex: 0 0 90px; }
+  .ingredient-unit { flex: 1; min-width: 120px; }
+  .ingredient-notes { flex: 2; min-width: 140px; }
+
+  button[mat-icon-button] {
+    margin-top: 8px;
+  }
+}
+
+/* Step blocks */
+.step-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-number {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.step-actions {
+  display: flex;
+  gap: 0;
+}
+
+.step-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .step-duration  { flex: 0 0 140px; }
+  .step-parallel  { flex: 0 0 140px; }
+}
+
+/* Add buttons */
+.add-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+mat-divider {
+  margin: 8px 0;
+}

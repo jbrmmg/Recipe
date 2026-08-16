@@ -1,10 +1,15 @@
 <div class="recipe-list-container">
 
-  <mat-form-field class="search-field" appearance="outline">
-    <mat-label>Search recipes</mat-label>
-    <input matInput [formControl]="searchControl" placeholder="Type to search...">
-    <mat-icon matPrefix>search</mat-icon>
-  </mat-form-field>
+  <div class="top-toolbar">
+    <mat-form-field class="search-field" appearance="outline">
+      <mat-label>Search recipes</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Type to search...">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="createRecipe()">
+      <mat-icon>add</mat-icon> Add Recipe
+    </button>
+  </div>
 
   @if (tags().length > 0) {
     <div class="tag-filter">
@@ -68,6 +73,8 @@
 
           <mat-card-actions>
             <button mat-button color="primary">VIEW</button>
+            <button mat-button (click)="editRecipe(recipe)">EDIT</button>
+            <button mat-button color="warn" (click)="deleteRecipe(recipe)">DELETE</button>
           </mat-card-actions>
         </mat-card>
       }

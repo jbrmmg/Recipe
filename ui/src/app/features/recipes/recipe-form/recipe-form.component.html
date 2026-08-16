@@ -1,0 +1,277 @@
+@if (loading()) {
+  <div class="loading-container">
+    <mat-spinner />
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="save()" class="recipe-form">
+
+    <!-- Header -->
+    <div class="form-header">
+      <h2>{{ isEdit() ? 'Edit Recipe' : 'New Recipe' }}</h2>
+      <div class="header-actions">
+        <button mat-button type="button" (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving()">
+          @if (saving()) { <mat-spinner diameter="18" /> } @else { Save }
+        </button>
+      </div>
+    </div>
+
+    <!-- Basic Details -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Details</mat-card-title></mat-card-header>
+      <mat-card-content>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Title *</mat-label>
+          <input matInput formControlName="title" placeholder="Recipe name">
+          @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
+            <mat-error>Title is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="3"
+                    placeholder="Short summary of the recipe"></textarea>
+        </mat-form-field>
+
+        <div class="row-3">
+          <mat-form-field appearance="outline">
+            <mat-label>Servings *</mat-label>
+            <input matInput type="number" formControlName="baseServings" min="1">
+            <mat-icon matSuffix>people</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Prep time (min)</mat-label>
+            <input matInput type="number" formControlName="prepTime" min="0">
+            <mat-icon matSuffix>schedule</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Cook time (min)</mat-label>
+            <input matInput type="number" formControlName="cookTime" min="0">
+            <mat-icon matSuffix>local_fire_department</mat-icon>
+          </mat-form-field>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tags -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Tags</mat-card-title></mat-card-header>
+      <mat-card-content>
+        @if (tags().length === 0) {
+          <p class="empty-hint">No tags defined yet — add some in the Tags screen.</p>
+        } @else {
+          <div class="tag-chips">
+            @for (tag of tags(); track tag.id) {
+              <mat-chip-option
+                [selected]="isTagSelected(tag.id)"
+                (click)="toggleTag(tag.id)">
+                {{ tag.name }}
+              </mat-chip-option>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Ingredients -->
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>Ingredients</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div formArrayName="ingredients">
+          @for (group of ingredientGroups; track $index; let i = $index) {
+            <div [formGroupName]="i" class="ingredient-row">
+
+              <mat-form-field appearance="outline" class="ingredient-name">
+                <mat-label>Ingredient *</mat-label>
+                <input matInput formControlName="ingredient"
+                       [matAutocomplete]="ingredientAuto"
+                       placeholder="Search...">
+                <mat-autocomplete #ingredientAuto
+                                  [displayWith]="displayIngredient"
+                                  (optionSelected)="onIngredientSelected($event, i)">
+                  @for (opt of filterIngredients(group.get('ingredient')?.value); track opt.id) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+                @if (group.get('ingredient')?.hasError('required') && group.get('ingredient')?.touched) {
+                  <mat-error>Required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="ingredient-qty">
+                <mat-label>Qty *</mat-label>
+                <input matInput type="number" formControlName="quantity" min="0" step="0.1">
+                @if (group.get('quantity')?.invalid && group.get('quantity')?.touched) {
+                  <mat-error>Required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="ingredient-unit">
+                <mat-label>Unit *</mat-label>
+                <mat-select formControlName="unit">
+                  @for (u of units; track u.value) {
+                    <mat-option [value]="u.value">{{ u.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="ingredient-notes">
+                <mat-label>Notes</mat-label>
+                <input matInput formControlName="notes" placeholder="e.g. finely chopped">
+              </mat-form-field>
+
+              <button mat-icon-button type="button" color="warn"
+                      (click)="removeIngredient(i)"
+                      matTooltip="Remove">
+                <mat-icon>remove_circle_outline</mat-icon>
+              </button>
+
+            </div>
+          }
+        </div>
+
+        <button mat-stroked-button type="button" (click)="addIngredient()" class="add-btn">
+          <mat-icon>add</mat-icon> Add ingredient
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Prep Steps -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Prep Steps</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div formArrayName="prepSteps">
+          @for (group of prepStepGroups; track $index; let i = $index) {
+            <div [formGroupName]="i" class="step-block">
+              <div class="step-header">
+                <span class="step-number">Step {{ i + 1 }}</span>
+                <div class="step-actions">
+                  <button mat-icon-button type="button" (click)="moveStep('prepSteps', i, -1)"
+                          [disabled]="i === 0" matTooltip="Move up">
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="moveStep('prepSteps', i, 1)"
+                          [disabled]="i === prepStepGroups.length - 1" matTooltip="Move down">
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" color="warn"
+                          (click)="removeStep('prepSteps', i)" matTooltip="Remove">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description *</mat-label>
+                <textarea matInput formControlName="description" rows="2"
+                          placeholder="What to do in this step"></textarea>
+                @if (group.get('description')?.hasError('required') && group.get('description')?.touched) {
+                  <mat-error>Description is required</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="step-options">
+                <mat-form-field appearance="outline" class="step-duration">
+                  <mat-label>Duration (min)</mat-label>
+                  <input matInput type="number" formControlName="durationMinutes" min="0">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="step-parallel">
+                  <mat-label>Parallel group</mat-label>
+                  <input matInput type="number" formControlName="parallelGroup" min="1"
+                         placeholder="Optional">
+                </mat-form-field>
+
+                <mat-checkbox formControlName="timerRequired">Timer alarm</mat-checkbox>
+              </div>
+
+              @if (i < prepStepGroups.length - 1) {
+                <mat-divider />
+              }
+            </div>
+          }
+        </div>
+        <button mat-stroked-button type="button" (click)="addStep('prepSteps')" class="add-btn">
+          <mat-icon>add</mat-icon> Add prep step
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Cook Steps -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Cook Steps</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div formArrayName="cookSteps">
+          @for (group of cookStepGroups; track $index; let i = $index) {
+            <div [formGroupName]="i" class="step-block">
+              <div class="step-header">
+                <span class="step-number">Step {{ i + 1 }}</span>
+                <div class="step-actions">
+                  <button mat-icon-button type="button" (click)="moveStep('cookSteps', i, -1)"
+                          [disabled]="i === 0" matTooltip="Move up">
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="moveStep('cookSteps', i, 1)"
+                          [disabled]="i === cookStepGroups.length - 1" matTooltip="Move down">
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" color="warn"
+                          (click)="removeStep('cookSteps', i)" matTooltip="Remove">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description *</mat-label>
+                <textarea matInput formControlName="description" rows="2"
+                          placeholder="What to do in this step"></textarea>
+                @if (group.get('description')?.hasError('required') && group.get('description')?.touched) {
+                  <mat-error>Description is required</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="step-options">
+                <mat-form-field appearance="outline" class="step-duration">
+                  <mat-label>Duration (min)</mat-label>
+                  <input matInput type="number" formControlName="durationMinutes" min="0">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="step-parallel">
+                  <mat-label>Parallel group</mat-label>
+                  <input matInput type="number" formControlName="parallelGroup" min="1"
+                         placeholder="Optional">
+                </mat-form-field>
+
+                <mat-checkbox formControlName="timerRequired">Timer alarm</mat-checkbox>
+              </div>
+
+              @if (i < cookStepGroups.length - 1) {
+                <mat-divider />
+              }
+            </div>
+          }
+        </div>
+        <button mat-stroked-button type="button" (click)="addStep('cookSteps')" class="add-btn">
+          <mat-icon>add</mat-icon> Add cook step
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bottom actions (repeat for long forms) -->
+    <div class="bottom-actions">
+      <button mat-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="saving()">
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { Save Recipe }
+      </button>
+    </div>
+
+  </form>
+}
