@@ -8,20 +8,20 @@ export interface Ingredient {
 }
 
 export const MEASUREMENT_UNITS = [
-  { value: 'GRAM',       label: 'Gram (g)' },
-  { value: 'KILOGRAM',   label: 'Kilogram (kg)' },
-  { value: 'MILLILITRE', label: 'Millilitre (ml)' },
-  { value: 'LITRE',      label: 'Litre (l)' },
-  { value: 'TEASPOON',   label: 'Teaspoon' },
-  { value: 'TABLESPOON', label: 'Tablespoon' },
-  { value: 'CUP',        label: 'Cup' },
-  { value: 'ITEM',       label: 'Item' },
-  { value: 'BUNCH',      label: 'Bunch' },
-  { value: 'PACK',       label: 'Pack' },
-  { value: 'PINCH',      label: 'Pinch' },
-  { value: 'SLICE',      label: 'Slice' },
-  { value: 'HANDFUL',    label: 'Handful' },
-  { value: 'CENTIMETRE', label: 'Centimetre (cm)' },
+  { value: 'GRAM',       label: 'Gram (g)',       short: 'g' },
+  { value: 'KILOGRAM',   label: 'Kilogram (kg)',  short: 'kg' },
+  { value: 'MILLILITRE', label: 'Millilitre (ml)', short: 'ml' },
+  { value: 'LITRE',      label: 'Litre (l)',      short: 'l' },
+  { value: 'TEASPOON',   label: 'Teaspoon',       short: 'tsp' },
+  { value: 'TABLESPOON', label: 'Tablespoon',     short: 'tbsp' },
+  { value: 'CUP',        label: 'Cup',            short: 'cup' },
+  { value: 'ITEM',       label: 'Item',           short: '' },
+  { value: 'BUNCH',      label: 'Bunch',          short: 'bunch' },
+  { value: 'PACK',       label: 'Pack',           short: 'pack' },
+  { value: 'PINCH',      label: 'Pinch',          short: 'pinch' },
+  { value: 'SLICE',      label: 'Slice',          short: 'slice' },
+  { value: 'HANDFUL',    label: 'Handful',        short: 'handful' },
+  { value: 'CENTIMETRE', label: 'Centimetre (cm)', short: 'cm' },
 ];
 
 export const INGREDIENT_CATEGORIES = [

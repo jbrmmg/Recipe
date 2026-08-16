@@ -72,7 +72,7 @@
           </mat-card-content>
 
           <mat-card-actions>
-            <button mat-button color="primary">VIEW</button>
+            <button mat-button color="primary" (click)="viewRecipe(recipe)">VIEW</button>
             <button mat-button (click)="editRecipe(recipe)">EDIT</button>
             <button mat-button color="warn" (click)="deleteRecipe(recipe)">DELETE</button>
           </mat-card-actions>

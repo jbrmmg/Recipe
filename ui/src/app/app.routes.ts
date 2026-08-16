@@ -18,6 +18,11 @@ export const routes: Routes = [
       .then(m => m.RecipeFormComponent)
   },
   {
+    path: 'recipes/:id',
+    loadComponent: () => import('./features/recipes/recipe-detail/recipe-detail.component')
+      .then(m => m.RecipeDetailComponent)
+  },
+  {
     path: 'ingredients',
     loadComponent: () => import('./features/ingredients/ingredient-list/ingredient-list.component')
       .then(m => m.IngredientListComponent)

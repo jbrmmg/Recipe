@@ -1,0 +1,165 @@
+@if (loading()) {
+  <div class="loading-container">
+    <mat-spinner />
+  </div>
+} @else if (recipe()) {
+  @let r = recipe()!;
+  <div class="detail-container">
+
+    <!-- Header -->
+    <div class="detail-header">
+      <button mat-icon-button (click)="back()" aria-label="Back to recipes">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1 class="recipe-title">{{ r.title }}</h1>
+      <button mat-icon-button (click)="edit()" aria-label="Edit recipe">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+
+    <!-- Meta row -->
+    <div class="meta-row">
+      @if (r.baseServings) {
+        <span class="meta-item">
+          <mat-icon>people</mat-icon> {{ r.baseServings }} servings
+        </span>
+      }
+      @if (r.prepTime) {
+        <span class="meta-item">
+          <mat-icon>schedule</mat-icon> {{ formatTime(r.prepTime) }} prep
+        </span>
+      }
+      @if (r.cookTime) {
+        <span class="meta-item">
+          <mat-icon>local_fire_department</mat-icon> {{ formatTime(r.cookTime) }} cook
+        </span>
+      }
+    </div>
+
+    <!-- Tags -->
+    @if (r.tags.length > 0) {
+      <mat-chip-set class="tags-row">
+        @for (tag of r.tags; track tag.id) {
+          <mat-chip>{{ tag.name }}</mat-chip>
+        }
+      </mat-chip-set>
+    }
+
+    <!-- Description -->
+    @if (r.description) {
+      <p class="description">{{ r.description }}</p>
+    }
+
+    <!-- Main content grid -->
+    <div class="content-grid">
+
+      <!-- Ingredients -->
+      <mat-card class="ingredients-card">
+        <mat-card-header>
+          <mat-card-title>Ingredients</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (r.ingredients.length === 0) {
+            <p class="empty-hint">No ingredients added.</p>
+          } @else {
+            <ul class="ingredients-list">
+              @for (ing of r.ingredients; track ing.ingredientId) {
+                <li>
+                  <span class="ing-qty">{{ formatQty(ing.quantity) }}{{ unitShort(ing.unit) ? '&nbsp;' + unitShort(ing.unit) : '' }}</span>
+                  <span class="ing-name">{{ ing.ingredientName }}</span>
+                  @if (ing.notes) {
+                    <span class="ing-notes">({{ ing.notes }})</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Steps -->
+      <div class="steps-column">
+
+        @if (prepSteps().length > 0) {
+          <mat-card class="steps-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon class="phase-icon">cut</mat-icon> Preparation
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              @for (step of prepSteps(); track step.id; let i = $index) {
+                <div class="step">
+                  <div class="step-number">{{ i + 1 }}</div>
+                  <div class="step-body">
+                    <p class="step-description">{{ step.description }}</p>
+                    <div class="step-meta">
+                      @if (step.durationSeconds) {
+                        <span class="step-tag">
+                          <mat-icon>timer</mat-icon> {{ formatDuration(step.durationSeconds) }}
+                        </span>
+                      }
+                      @if (step.timerRequired) {
+                        <span class="step-tag alarm">
+                          <mat-icon>alarm</mat-icon> alarm
+                        </span>
+                      }
+                      @if (parallelGroupLabel(step, prepSteps())) {
+                        <span class="step-tag parallel">
+                          <mat-icon>call_split</mat-icon> {{ parallelGroupLabel(step, prepSteps()) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        @if (cookSteps().length > 0) {
+          <mat-card class="steps-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon class="phase-icon">local_fire_department</mat-icon> Cooking
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              @for (step of cookSteps(); track step.id; let i = $index) {
+                <div class="step">
+                  <div class="step-number">{{ i + 1 }}</div>
+                  <div class="step-body">
+                    <p class="step-description">{{ step.description }}</p>
+                    <div class="step-meta">
+                      @if (step.durationSeconds) {
+                        <span class="step-tag">
+                          <mat-icon>timer</mat-icon> {{ formatDuration(step.durationSeconds) }}
+                        </span>
+                      }
+                      @if (step.timerRequired) {
+                        <span class="step-tag alarm">
+                          <mat-icon>alarm</mat-icon> alarm
+                        </span>
+                      }
+                      @if (parallelGroupLabel(step, cookSteps())) {
+                        <span class="step-tag parallel">
+                          <mat-icon>call_split</mat-icon> {{ parallelGroupLabel(step, cookSteps()) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        @if (prepSteps().length === 0 && cookSteps().length === 0) {
+          <p class="empty-hint">No steps added yet.</p>
+        }
+
+      </div>
+    </div>
+
+  </div>
+}
