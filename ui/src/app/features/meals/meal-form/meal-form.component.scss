@@ -1,0 +1,79 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+.meal-form {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+
+  h2 { margin: 0; font-size: 24px; }
+}
+
+.header-actions,
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.bottom-actions {
+  justify-content: flex-end;
+  padding-bottom: 32px;
+}
+
+.form-card mat-card-content {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.full-width { width: 100%; }
+
+.recipe-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+
+  .recipe-name { flex: 1; min-width: 200px; }
+  .servings-field { flex: 0 0 120px; }
+}
+
+.row-actions {
+  display: flex;
+  padding-top: 4px;
+}
+
+.option-hint {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.empty-hint {
+  color: rgba(0, 0, 0, 0.45);
+  font-style: italic;
+  margin: 0;
+}
+
+.add-btn {
+  align-self: flex-start;
+}
+
+mat-divider {
+  margin: 4px 0;
+}

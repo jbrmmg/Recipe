@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: '007-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: meal
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: notes
+                  type: TEXT

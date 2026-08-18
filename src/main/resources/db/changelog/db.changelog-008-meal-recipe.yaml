@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: '008-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: meal_recipe
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: meal_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_mr_meal
+                    references: meal(id)
+                    deleteCascade: true
+              - column:
+                  name: recipe_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_mr_recipe
+                    references: recipe(id)
+              - column:
+                  name: servings
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: display_order
+                  type: INT
+                  constraints:
+                    nullable: false

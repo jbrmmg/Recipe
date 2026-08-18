@@ -1,0 +1,44 @@
+<div class="meal-list-page">
+
+  <div class="toolbar">
+    <h2 class="page-title">Meals</h2>
+    <button mat-raised-button color="primary" (click)="addMeal()">
+      <mat-icon>add</mat-icon> Add Meal
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (meals().length === 0) {
+    <div class="empty-state">
+      <mat-icon>restaurant</mat-icon>
+      <p>No meals yet — add one above.</p>
+    </div>
+  } @else {
+    <mat-list>
+      @for (meal of meals(); track meal.id; let last = $last) {
+        <mat-list-item class="meal-item">
+          <span matListItemTitle>{{ meal.name }}</span>
+          <span matListItemLine class="recipe-count">{{ recipeLabel(meal.recipeCount) }}</span>
+          @if (meal.notes) {
+            <span matListItemLine class="meal-notes">{{ meal.notes }}</span>
+          }
+          <div matListItemMeta class="actions">
+            <button mat-icon-button (click)="editMeal(meal)" aria-label="Edit meal">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteMeal(meal)" aria-label="Delete meal">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        @if (!last) {
+          <mat-divider />
+        }
+      }
+    </mat-list>
+  }
+
+</div>

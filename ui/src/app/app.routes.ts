@@ -23,6 +23,36 @@ export const routes: Routes = [
       .then(m => m.RecipeDetailComponent)
   },
   {
+    path: 'meal-plans',
+    loadComponent: () => import('./features/meal-plans/meal-plan-list/meal-plan-list.component')
+      .then(m => m.MealPlanListComponent)
+  },
+  {
+    path: 'meal-plans/new',
+    loadComponent: () => import('./features/meal-plans/meal-plan-form/meal-plan-form.component')
+      .then(m => m.MealPlanFormComponent)
+  },
+  {
+    path: 'meal-plans/:id/edit',
+    loadComponent: () => import('./features/meal-plans/meal-plan-form/meal-plan-form.component')
+      .then(m => m.MealPlanFormComponent)
+  },
+  {
+    path: 'meals',
+    loadComponent: () => import('./features/meals/meal-list/meal-list.component')
+      .then(m => m.MealListComponent)
+  },
+  {
+    path: 'meals/new',
+    loadComponent: () => import('./features/meals/meal-form/meal-form.component')
+      .then(m => m.MealFormComponent)
+  },
+  {
+    path: 'meals/:id/edit',
+    loadComponent: () => import('./features/meals/meal-form/meal-form.component')
+      .then(m => m.MealFormComponent)
+  },
+  {
     path: 'ingredients',
     loadComponent: () => import('./features/ingredients/ingredient-list/ingredient-list.component')
       .then(m => m.IngredientListComponent)
