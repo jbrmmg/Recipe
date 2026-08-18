@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: '010-001'
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: meal_plan_entry
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: meal_plan_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_mpe_meal_plan
+                    references: meal_plan(id)
+                    deleteCascade: true
+              - column:
+                  name: meal_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_mpe_meal
+                    references: meal(id)
+              - column:
+                  name: day_label
+                  type: VARCHAR(100)
+              - column:
+                  name: display_order
+                  type: INT
+                  constraints:
+                    nullable: false

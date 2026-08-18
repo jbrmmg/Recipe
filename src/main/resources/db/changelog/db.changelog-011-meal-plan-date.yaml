@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: '011-001'
+      author: jbrmmg
+      changes:
+        - addColumn:
+            tableName: meal_plan
+            columns:
+              - column:
+                  name: date
+                  type: DATE
+                  constraints:
+                    nullable: false
+                  defaultValueDate: '2026-01-01'

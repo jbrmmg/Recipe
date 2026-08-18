@@ -29,3 +29,6 @@ databaseChangeLog:
 
   - include:
       file: /db/changelog/db.changelog-010-meal-plan-entry.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-011-meal-plan-date.yaml

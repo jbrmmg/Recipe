@@ -1,0 +1,120 @@
+@if (loading()) {
+  <div class="loading-container">
+    <mat-spinner />
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="save()" class="plan-form">
+
+    <!-- Header -->
+    <div class="form-header">
+      <h2>{{ isEdit() ? 'Edit Meal Plan' : 'New Meal Plan' }}</h2>
+      <div class="header-actions">
+        <button mat-button type="button" (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving()">
+          @if (saving()) { <mat-spinner diameter="18" /> } @else { Save }
+        </button>
+      </div>
+    </div>
+
+    <!-- Plan name -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Details</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="name-date-row">
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>Plan name *</mat-label>
+            <input matInput formControlName="name" placeholder="e.g. Weekend">
+            @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+              <mat-error>Name is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>Date *</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date">
+            <mat-datepicker-toggle matIconSuffix [for]="picker" />
+            <mat-datepicker #picker />
+            @if (form.get('date')?.hasError('required') && form.get('date')?.touched) {
+              <mat-error>Date is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Meals -->
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Meals</mat-card-title></mat-card-header>
+      <mat-card-content>
+
+        <div formArrayName="entries">
+          @for (group of entryGroups; track $index; let i = $index; let last = $last) {
+            <div [formGroupName]="i" class="entry-row">
+
+              <mat-form-field appearance="outline" class="meal-field">
+                <mat-label>Meal *</mat-label>
+                <input matInput formControlName="meal"
+                       [matAutocomplete]="mealAuto"
+                       placeholder="Search meals...">
+                <mat-autocomplete #mealAuto
+                                  [displayWith]="displayMeal"
+                                  (optionSelected)="onMealSelected($event, i)">
+                  @for (opt of filterMeals(group.get('meal')?.value); track opt.id) {
+                    <mat-option [value]="opt">
+                      {{ opt.name }}
+                      <span class="option-hint">({{ opt.recipeCount }} recipe{{ opt.recipeCount !== 1 ? 's' : '' }})</span>
+                    </mat-option>
+                  }
+                </mat-autocomplete>
+                @if (group.get('meal')?.invalid && group.get('meal')?.touched) {
+                  <mat-error>Select a meal from the list</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="day-field">
+                <mat-label>Day / label</mat-label>
+                <input matInput formControlName="dayLabel"
+                       placeholder="e.g. Saturday dinner">
+              </mat-form-field>
+
+              <div class="row-actions">
+                <button mat-icon-button type="button" (click)="moveEntry(i, -1)"
+                        [disabled]="i === 0" matTooltip="Move up">
+                  <mat-icon>arrow_upward</mat-icon>
+                </button>
+                <button mat-icon-button type="button" (click)="moveEntry(i, 1)"
+                        [disabled]="i === entryGroups.length - 1" matTooltip="Move down">
+                  <mat-icon>arrow_downward</mat-icon>
+                </button>
+                <button mat-icon-button type="button" color="warn" (click)="removeEntry(i)"
+                        matTooltip="Remove">
+                  <mat-icon>remove_circle_outline</mat-icon>
+                </button>
+              </div>
+
+            </div>
+            @if (!last) { <mat-divider /> }
+          }
+        </div>
+
+        @if (entryGroups.length === 0) {
+          <p class="empty-hint">Add meals to this plan.</p>
+        }
+
+        <button mat-stroked-button type="button" (click)="addEntry()" class="add-btn">
+          <mat-icon>add</mat-icon> Add meal
+        </button>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bottom actions -->
+    <div class="bottom-actions">
+      <button mat-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="saving()">
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { Save Plan }
+      </button>
+    </div>
+
+  </form>
+}

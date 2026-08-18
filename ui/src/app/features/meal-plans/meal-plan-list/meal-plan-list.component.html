@@ -1,0 +1,43 @@
+<div class="plan-list-page">
+
+  <div class="toolbar">
+    <h2 class="page-title">Meal Plans</h2>
+    <button mat-raised-button color="primary" (click)="addPlan()">
+      <mat-icon>add</mat-icon> New Plan
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (plans().length === 0) {
+    <div class="empty-state">
+      <mat-icon>calendar_month</mat-icon>
+      <p>No meal plans yet — create one above.</p>
+    </div>
+  } @else {
+    <mat-list>
+      @for (plan of plans(); track plan.id; let last = $last) {
+        <mat-list-item class="plan-item">
+          <span matListItemTitle>{{ plan.name }}</span>
+          <span matListItemLine class="plan-meta">
+            {{ plan.date | date:'d MMM yyyy' }} &middot; {{ mealLabel(plan.entryCount) }}
+          </span>
+          <div matListItemMeta class="actions">
+            <button mat-icon-button (click)="editPlan(plan)" aria-label="Edit plan">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deletePlan(plan)" aria-label="Delete plan">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        @if (!last) {
+          <mat-divider />
+        }
+      }
+    </mat-list>
+  }
+
+</div>
