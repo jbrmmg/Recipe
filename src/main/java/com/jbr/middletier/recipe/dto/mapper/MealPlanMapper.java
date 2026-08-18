@@ -14,11 +14,13 @@ import java.util.List;
 public interface MealPlanMapper {
 
     @Mapping(target = "entryCount", expression = "java(mealPlan.getEntries().size())")
+    @Mapping(target = "date", source = "date")
     MealPlanSummaryDto toSummaryDto(MealPlan mealPlan);
 
     List<MealPlanSummaryDto> toSummaryDtoList(List<MealPlan> plans);
 
     @Mapping(target = "entries", source = "entries")
+    @Mapping(target = "date", source = "date")
     MealPlanDetailDto toDetailDto(MealPlan mealPlan);
 
     @Mapping(target = "mealId",   source = "meal.id")

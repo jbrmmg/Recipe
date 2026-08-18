@@ -22,9 +22,12 @@
         <mat-list-item class="plan-item">
           <span matListItemTitle>{{ plan.name }}</span>
           <span matListItemLine class="plan-meta">
-            {{ plan.date | date:'d MMM yyyy' }} &middot; {{ mealLabel(plan.entryCount) }}
+            {{ plan.date | date:'d MMM yyyy':'UTC' }} &middot; {{ mealLabel(plan.entryCount) }}
           </span>
           <div matListItemMeta class="actions">
+            <button mat-icon-button (click)="viewShopping(plan)" aria-label="Shopping list">
+              <mat-icon>shopping_cart</mat-icon>
+            </button>
             <button mat-icon-button (click)="editPlan(plan)" aria-label="Edit plan">
               <mat-icon>edit</mat-icon>
             </button>

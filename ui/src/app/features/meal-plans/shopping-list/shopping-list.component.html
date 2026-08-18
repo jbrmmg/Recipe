@@ -1,0 +1,51 @@
+@if (loading()) {
+  <div class="loading-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else {
+  @let list = shoppingList()!;
+  <div class="shopping-page">
+
+    <div class="toolbar">
+      <div class="title-block">
+        <button mat-icon-button (click)="back()" aria-label="Back">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div>
+          <h2 class="page-title">{{ list.planName }}</h2>
+          <p class="page-subtitle">{{ list.date | date:'d MMM yyyy':'UTC' }}</p>
+        </div>
+      </div>
+    </div>
+
+    @if (list.items.length === 0) {
+      <div class="empty-state">
+        <mat-icon>shopping_cart</mat-icon>
+        <p>No ingredients — add meals to this plan first.</p>
+      </div>
+    } @else {
+      <div class="groups">
+        @for (group of groups(); track group.category) {
+          <div class="category-group">
+            <h3 class="category-heading">{{ group.label }}</h3>
+            <div class="item-list">
+              @for (item of group.items; track itemKey(item)) {
+                <div class="item-row" [class.item-checked]="isChecked(item)"
+                     (click)="toggleChecked(item)">
+                  <mat-checkbox [checked]="isChecked(item)"
+                                (click)="$event.stopPropagation()"
+                                (change)="toggleChecked(item)"
+                                color="primary" />
+                  <span class="item-qty">{{ formatQty(item.quantity, item.unit) }}</span>
+                  <span class="item-name">{{ item.ingredientName }}</span>
+                </div>
+              }
+            </div>
+            <mat-divider />
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+}

@@ -3,6 +3,7 @@ package com.jbr.middletier.recipe.controller;
 import com.jbr.middletier.recipe.dto.MealPlanDetailDto;
 import com.jbr.middletier.recipe.dto.MealPlanDto;
 import com.jbr.middletier.recipe.dto.MealPlanSummaryDto;
+import com.jbr.middletier.recipe.dto.ShoppingListDto;
 import com.jbr.middletier.recipe.service.MealPlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,11 @@ public class MealPlanController {
     @PutMapping("/{id}")
     public MealPlanDetailDto update(@PathVariable("id") Long id, @Valid @RequestBody MealPlanDto dto) {
         return mealPlanService.update(id, dto);
+    }
+
+    @GetMapping("/{id}/shopping-list")
+    public ShoppingListDto getShoppingList(@PathVariable("id") Long id) {
+        return mealPlanService.getShoppingList(id);
     }
 
     @DeleteMapping("/{id}")

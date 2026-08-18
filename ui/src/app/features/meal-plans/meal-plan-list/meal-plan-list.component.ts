@@ -55,6 +55,10 @@ export class MealPlanListComponent implements OnInit {
     this.router.navigate(['/meal-plans', plan.id, 'edit']);
   }
 
+  viewShopping(plan: MealPlanSummary) {
+    this.router.navigate(['/meal-plans', plan.id, 'shopping']);
+  }
+
   deletePlan(plan: MealPlanSummary) {
     this.dialog.open(ConfirmDialogComponent, {
       data: { title: 'Delete meal plan', message: `Delete "${plan.name}"?` },

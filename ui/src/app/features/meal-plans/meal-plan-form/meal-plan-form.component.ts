@@ -76,7 +76,7 @@ export class MealPlanFormComponent implements OnInit {
         if (result.plan) {
           this.form.patchValue({
             name: result.plan.name,
-            date: result.plan.date ? new Date(result.plan.date) : null,
+            date: result.plan.date ? this.parseLocalDate(result.plan.date) : null,
           });
           result.plan.entries.forEach((e: MealPlanEntry) => this.addEntry(e));
         }
@@ -135,6 +135,11 @@ export class MealPlanFormComponent implements OnInit {
   onMealSelected(event: MatAutocompleteSelectedEvent, i: number) {
     const meal = event.option.value as MealSummary;
     (this.entriesArray.at(i) as FormGroup).patchValue({ meal });
+  }
+
+  private parseLocalDate(dateStr: string): Date {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 
   save() {
