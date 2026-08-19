@@ -4,24 +4,49 @@
   </div>
 } @else {
   @let list = shoppingList()!;
+
   <div class="shopping-page">
 
-    <div class="toolbar">
-      <div class="title-block">
+    <!-- Header -->
+    <div class="page-header" [class.shop-mode]="shopMode()">
+      <div class="header-top">
         <button mat-icon-button (click)="back()" aria-label="Back">
           <mat-icon>arrow_back</mat-icon>
         </button>
-        <div>
-          <h2 class="page-title">{{ list.planName }}</h2>
-          <p class="page-subtitle">{{ list.date | date:'d MMM yyyy':'UTC' }}</p>
+        <div class="header-title">
+          @if (shopMode()) {
+            <h2 class="page-title">Shopping List</h2>
+            <p class="page-subtitle">{{ neededCount() }} item{{ neededCount() !== 1 ? 's' : '' }} to buy</p>
+          } @else {
+            <h2 class="page-title">In the Kitchen</h2>
+            <p class="page-subtitle">Tick what you already have</p>
+          }
         </div>
+        <div class="header-actions">
+          @if (shopMode()) {
+            <button mat-raised-button (click)="backToKitchen()">
+              <mat-icon>kitchen</mat-icon> Back to Kitchen
+            </button>
+          } @else {
+            <button mat-raised-button color="primary" (click)="goShopping()">
+              <mat-icon>shopping_cart</mat-icon> Go Shopping
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="plan-chips">
+        @for (plan of list.plans; track plan.name) {
+          <span class="plan-chip">{{ plan.name }} · {{ formatDate(plan.date) }}</span>
+        }
       </div>
     </div>
 
-    @if (list.items.length === 0) {
+    <!-- Items -->
+    @if (groups().length === 0) {
       <div class="empty-state">
-        <mat-icon>shopping_cart</mat-icon>
-        <p>No ingredients — add meals to this plan first.</p>
+        <mat-icon>check_circle</mat-icon>
+        <p>{{ shopMode() ? 'Nothing left to buy!' : 'No ingredients found.' }}</p>
       </div>
     } @else {
       <div class="groups">
@@ -30,12 +55,15 @@
             <h3 class="category-heading">{{ group.label }}</h3>
             <div class="item-list">
               @for (item of group.items; track itemKey(item)) {
-                <div class="item-row" [class.item-checked]="isChecked(item)"
+                <div class="item-row"
+                     [class.item-checked]="isChecked(item)"
                      (click)="toggleChecked(item)">
-                  <mat-checkbox [checked]="isChecked(item)"
-                                (click)="$event.stopPropagation()"
-                                (change)="toggleChecked(item)"
-                                color="primary" />
+                  @if (!shopMode()) {
+                    <mat-checkbox [checked]="isChecked(item)"
+                                  (click)="$event.stopPropagation()"
+                                  (change)="toggleChecked(item)"
+                                  color="primary" />
+                  }
                   <span class="item-qty">{{ formatQty(item.quantity, item.unit) }}</span>
                   <span class="item-name">{{ item.ingredientName }}</span>
                 </div>
@@ -44,6 +72,15 @@
             <mat-divider />
           </div>
         }
+      </div>
+    }
+
+    <!-- Footer (kitchen mode only) -->
+    @if (!shopMode() && checked().size > 0) {
+      <div class="footer">
+        <button mat-button (click)="clearChecked()">
+          <mat-icon>clear_all</mat-icon> Clear all ticks
+        </button>
       </div>
     }
 

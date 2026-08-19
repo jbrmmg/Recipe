@@ -2,9 +2,16 @@
 
   <div class="toolbar">
     <h2 class="page-title">Meal Plans</h2>
-    <button mat-raised-button color="primary" (click)="addPlan()">
-      <mat-icon>add</mat-icon> New Plan
-    </button>
+    <div class="toolbar-actions">
+      @if (anySelected()) {
+        <button mat-raised-button color="accent" (click)="viewShopping()">
+          <mat-icon>shopping_cart</mat-icon> Shopping List
+        </button>
+      }
+      <button mat-raised-button color="primary" (click)="addPlan()">
+        <mat-icon>add</mat-icon> New Plan
+      </button>
+    </div>
   </div>
 
   @if (loading()) {
@@ -20,14 +27,16 @@
     <mat-list>
       @for (plan of plans(); track plan.id; let last = $last) {
         <mat-list-item class="plan-item">
+          <mat-checkbox matListItemIcon
+                        [checked]="isSelected(plan)"
+                        (change)="toggleSelect(plan)"
+                        (click)="$event.stopPropagation()"
+                        aria-label="Select plan" />
           <span matListItemTitle>{{ plan.name }}</span>
           <span matListItemLine class="plan-meta">
             {{ plan.date | date:'d MMM yyyy':'UTC' }} &middot; {{ mealLabel(plan.entryCount) }}
           </span>
           <div matListItemMeta class="actions">
-            <button mat-icon-button (click)="viewShopping(plan)" aria-label="Shopping list">
-              <mat-icon>shopping_cart</mat-icon>
-            </button>
             <button mat-icon-button (click)="editPlan(plan)" aria-label="Edit plan">
               <mat-icon>edit</mat-icon>
             </button>
@@ -41,6 +50,10 @@
         }
       }
     </mat-list>
+
+    @if (plans().length > 0) {
+      <p class="select-hint">Select one or more plans to generate a shopping list.</p>
+    }
   }
 
 </div>

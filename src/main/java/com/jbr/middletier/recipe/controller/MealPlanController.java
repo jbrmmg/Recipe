@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/meal-plan")
 @RequiredArgsConstructor
@@ -40,9 +42,9 @@ public class MealPlanController {
         return mealPlanService.update(id, dto);
     }
 
-    @GetMapping("/{id}/shopping-list")
-    public ShoppingListDto getShoppingList(@PathVariable("id") Long id) {
-        return mealPlanService.getShoppingList(id);
+    @GetMapping("/shopping-list")
+    public ShoppingListDto getShoppingList(@RequestParam(name = "ids") List<Long> ids) {
+        return mealPlanService.getShoppingList(ids);
     }
 
     @DeleteMapping("/{id}")

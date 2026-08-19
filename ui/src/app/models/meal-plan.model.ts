@@ -28,8 +28,12 @@ export interface ShoppingListItem {
   quantity: number;
 }
 
-export interface ShoppingList {
-  planName: string;
+export interface ShoppingPlanInfo {
+  name: string;
   date: string;
+}
+
+export interface ShoppingList {
+  plans: ShoppingPlanInfo[];
   items: ShoppingListItem[];
 }

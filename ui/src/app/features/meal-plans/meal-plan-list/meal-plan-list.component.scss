@@ -10,6 +10,12 @@
   margin-bottom: 16px;
 }
 
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .page-title {
   margin: 0;
   font-size: 22px;
@@ -51,4 +57,10 @@
 
 .actions {
   display: flex;
+}
+
+.select-hint {
+  margin: 12px 8px 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
 }

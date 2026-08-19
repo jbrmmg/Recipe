@@ -25,8 +25,10 @@ export class MealPlanService {
     return this.http.put<MealPlanDetail>(`${this.url}/${id}`, payload);
   }
 
-  getShoppingList(id: number): Observable<ShoppingList> {
-    return this.http.get<ShoppingList>(`${this.url}/${id}/shopping-list`);
+  getShoppingList(ids: number[]): Observable<ShoppingList> {
+    return this.http.get<ShoppingList>(`${this.url}/shopping-list`, {
+      params: { ids: ids.map(String) },
+    });
   }
 
   delete(id: number): Observable<void> {

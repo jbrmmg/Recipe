@@ -6,6 +6,7 @@ import com.jbr.middletier.recipe.dto.MealPlanEntryDto;
 import com.jbr.middletier.recipe.dto.MealPlanSummaryDto;
 import com.jbr.middletier.recipe.dto.ShoppingListDto;
 import com.jbr.middletier.recipe.dto.ShoppingListItemDto;
+import com.jbr.middletier.recipe.dto.ShoppingPlanInfo;
 import com.jbr.middletier.recipe.dto.mapper.MealPlanMapper;
 import com.jbr.middletier.recipe.exception.ResourceNotFoundException;
 import com.jbr.middletier.recipe.model.Meal;
@@ -81,21 +82,25 @@ public class MealPlanService {
         return plan;
     }
 
-    public ShoppingListDto getShoppingList(Long planId) {
-        MealPlan plan = getOrThrow(planId);
-
+    public ShoppingListDto getShoppingList(List<Long> planIds) {
         Map<String, double[]> totals = new LinkedHashMap<>();
         Map<String, RecipeIngredient> firstSeen = new LinkedHashMap<>();
+        List<ShoppingPlanInfo> planInfos = new ArrayList<>();
 
-        for (MealPlanEntry planEntry : plan.getEntries()) {
-            Meal meal = planEntry.getMeal();
-            for (MealRecipe mealRecipe : meal.getMealRecipes()) {
-                double scaleFactor = (double) mealRecipe.getServings() / mealRecipe.getRecipe().getBaseServings();
-                for (RecipeIngredient ri : mealRecipe.getRecipe().getIngredients()) {
-                    String key = ri.getIngredient().getId() + ":" + ri.getUnit();
-                    totals.merge(key, new double[]{ri.getQuantity() * scaleFactor},
-                            (a, b) -> new double[]{a[0] + b[0]});
-                    firstSeen.putIfAbsent(key, ri);
+        for (Long planId : planIds) {
+            MealPlan plan = getOrThrow(planId);
+            planInfos.add(new ShoppingPlanInfo(plan.getName(), plan.getDate()));
+
+            for (MealPlanEntry planEntry : plan.getEntries()) {
+                Meal meal = planEntry.getMeal();
+                for (MealRecipe mealRecipe : meal.getMealRecipes()) {
+                    double scaleFactor = (double) mealRecipe.getServings() / mealRecipe.getRecipe().getBaseServings();
+                    for (RecipeIngredient ri : mealRecipe.getRecipe().getIngredients()) {
+                        String key = ri.getIngredient().getId() + ":" + ri.getUnit();
+                        totals.merge(key, new double[]{ri.getQuantity() * scaleFactor},
+                                (a, b) -> new double[]{a[0] + b[0]});
+                        firstSeen.putIfAbsent(key, ri);
+                    }
                 }
             }
         }
@@ -115,8 +120,7 @@ public class MealPlanService {
                 .thenComparing(ShoppingListItemDto::getIngredientName));
 
         ShoppingListDto dto = new ShoppingListDto();
-        dto.setPlanName(plan.getName());
-        dto.setDate(plan.getDate());
+        dto.setPlans(planInfos);
         dto.setItems(items);
         return dto;
     }

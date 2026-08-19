@@ -5,8 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { ShoppingList, ShoppingListItem } from '../../../models/meal-plan.model';
 import { MEASUREMENT_UNITS, INGREDIENT_CATEGORIES } from '../../../models/ingredient.model';
@@ -37,8 +38,8 @@ export interface ShoppingGroup {
     MatProgressSpinnerModule,
     MatCheckboxModule,
     MatDividerModule,
+    MatTooltipModule,
     DatePipe,
-    DecimalPipe,
   ],
   templateUrl: './shopping-list.component.html',
   styleUrl: './shopping-list.component.scss',
@@ -52,15 +53,24 @@ export class ShoppingListComponent implements OnInit {
   loading = signal(true);
   shoppingList = signal<ShoppingList | null>(null);
   checked = signal<Set<string>>(new Set());
+  shopMode = signal(false);  // false = kitchen walk, true = at the shop
+
+  private storageKey = '';
 
   groups = computed<ShoppingGroup[]>(() => {
     const list = this.shoppingList();
     if (!list) return [];
+    const inShopMode = this.shopMode();
+    const checkedSet = this.checked();
+
+    const visibleItems = inShopMode
+      ? list.items.filter(i => !checkedSet.has(this.itemKey(i)))
+      : list.items;
+
     const byCategory = new Map<string, ShoppingListItem[]>();
-    for (const item of list.items) {
-      const cat = item.category;
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push(item);
+    for (const item of visibleItems) {
+      if (!byCategory.has(item.category)) byCategory.set(item.category, []);
+      byCategory.get(item.category)!.push(item);
     }
     return CATEGORY_ORDER
       .filter(cat => byCategory.has(cat))
@@ -71,9 +81,27 @@ export class ShoppingListComponent implements OnInit {
       }));
   });
 
+  neededCount = computed(() => {
+    const list = this.shoppingList();
+    if (!list) return 0;
+    return list.items.filter(i => !this.checked().has(this.itemKey(i))).length;
+  });
+
   ngOnInit() {
-    const id = +this.route.snapshot.paramMap.get('id')!;
-    this.mealPlanService.getShoppingList(id).subscribe({
+    const planParam = this.route.snapshot.queryParamMap.get('plans') ?? '';
+    const ids = planParam.split(',').map(Number).filter(Boolean);
+    if (ids.length === 0) {
+      this.router.navigate(['/meal-plans']);
+      return;
+    }
+
+    this.storageKey = `shopping-checked:${ids.slice().sort().join(',')}`;
+    const saved = localStorage.getItem(this.storageKey);
+    if (saved) {
+      try { this.checked.set(new Set(JSON.parse(saved))); } catch { /* ignore */ }
+    }
+
+    this.mealPlanService.getShoppingList(ids).subscribe({
       next: list => {
         this.shoppingList.set(list);
         this.loading.set(false);
@@ -98,13 +126,33 @@ export class ShoppingListComponent implements OnInit {
     const next = new Set(this.checked());
     if (next.has(key)) next.delete(key); else next.add(key);
     this.checked.set(next);
+    localStorage.setItem(this.storageKey, JSON.stringify(Array.from(next)));
+  }
+
+  goShopping() {
+    this.shopMode.set(true);
+  }
+
+  backToKitchen() {
+    this.shopMode.set(false);
+  }
+
+  clearChecked() {
+    this.checked.set(new Set());
+    localStorage.removeItem(this.storageKey);
   }
 
   formatQty(quantity: number, unit: string): string {
     const short = UNIT_SHORT[unit] ?? unit;
     const rounded = Math.round(quantity * 100) / 100;
     const num = Number.isInteger(rounded) ? `${rounded}` : `${rounded}`;
-    return short ? `${num}${short}` : num;
+    return short ? `${num} ${short}` : num;
+  }
+
+  formatDate(d: string): string {
+    const [year, month, day] = d.split('-').map(Number);
+    return new Date(year, month - 1, day)
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   back() {

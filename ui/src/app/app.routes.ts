@@ -38,7 +38,7 @@ export const routes: Routes = [
       .then(m => m.MealPlanFormComponent)
   },
   {
-    path: 'meal-plans/:id/shopping',
+    path: 'shopping',
     loadComponent: () => import('./features/meal-plans/shopping-list/shopping-list.component')
       .then(m => m.ShoppingListComponent)
   },

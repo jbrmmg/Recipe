@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { DatePipe } from '@angular/common';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { MealPlanSummary } from '../../../models/meal-plan.model';
@@ -20,6 +21,7 @@ import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-d
     MatIconModule,
     MatProgressSpinnerModule,
     MatDividerModule,
+    MatCheckboxModule,
     DatePipe,
   ],
   templateUrl: './meal-plan-list.component.html',
@@ -33,6 +35,9 @@ export class MealPlanListComponent implements OnInit {
 
   plans = signal<MealPlanSummary[]>([]);
   loading = signal(true);
+  selected = signal<Set<number>>(new Set());
+
+  anySelected = computed(() => this.selected().size > 0);
 
   ngOnInit() {
     this.mealPlanService.getAll().subscribe({
@@ -47,6 +52,16 @@ export class MealPlanListComponent implements OnInit {
     });
   }
 
+  isSelected(plan: MealPlanSummary): boolean {
+    return this.selected().has(plan.id);
+  }
+
+  toggleSelect(plan: MealPlanSummary) {
+    const next = new Set(this.selected());
+    if (next.has(plan.id)) next.delete(plan.id); else next.add(plan.id);
+    this.selected.set(next);
+  }
+
   addPlan() {
     this.router.navigate(['/meal-plans/new']);
   }
@@ -55,8 +70,9 @@ export class MealPlanListComponent implements OnInit {
     this.router.navigate(['/meal-plans', plan.id, 'edit']);
   }
 
-  viewShopping(plan: MealPlanSummary) {
-    this.router.navigate(['/meal-plans', plan.id, 'shopping']);
+  viewShopping() {
+    const ids = Array.from(this.selected());
+    this.router.navigate(['/shopping'], { queryParams: { plans: ids.join(',') } });
   }
 
   deletePlan(plan: MealPlanSummary) {
@@ -67,6 +83,7 @@ export class MealPlanListComponent implements OnInit {
       this.mealPlanService.delete(plan.id).subscribe({
         next: () => {
           this.plans.update(list => list.filter(p => p.id !== plan.id));
+          this.selected.update(s => { const n = new Set(s); n.delete(plan.id); return n; });
           this.snackBar.open(`"${plan.name}" deleted`, 'Close', { duration: 2000 });
         },
         error: () => this.snackBar.open('Failed to delete meal plan', 'Close', { duration: 3000 }),
