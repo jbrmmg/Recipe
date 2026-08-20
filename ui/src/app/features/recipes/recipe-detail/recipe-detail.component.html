@@ -12,6 +12,9 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h1 class="recipe-title">{{ r.title }}</h1>
+      <button mat-raised-button color="primary" (click)="cook()" aria-label="Start cooking">
+        <mat-icon>play_arrow</mat-icon> Cook
+      </button>
       <button mat-icon-button (click)="edit()" aria-label="Edit recipe">
         <mat-icon>edit</mat-icon>
       </button>

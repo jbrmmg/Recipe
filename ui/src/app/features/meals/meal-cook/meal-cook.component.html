@@ -1,0 +1,153 @@
+@if (loading()) {
+  <div class="loading-container"><mat-spinner diameter="48" /></div>
+
+} @else if (screen() === 'setup') {
+  @let m = meal()!;
+  <div class="setup-screen">
+
+    <div class="setup-header">
+      <button mat-icon-button (click)="back()"><mat-icon>arrow_back</mat-icon></button>
+      <h1 class="setup-title">{{ m.name }}</h1>
+    </div>
+
+    <div class="recipe-overview">
+      @for (recipe of recipes(); track recipe.id; let i = $index) {
+        @let mr = m.recipes[i];
+        <div class="recipe-card" [style.border-left-color]="['#1565c0','#e65100','#6a1b9a','#2e7d32','#c62828'][i % 5]">
+          <div class="recipe-card-title">{{ recipe.title }}</div>
+          <div class="recipe-card-meta">
+            {{ mr.servings }} serving{{ mr.servings !== 1 ? 's' : '' }}
+            @if (mr.recipePrepTime || mr.recipeCookTime) {
+              &nbsp;·&nbsp;
+              @if (mr.recipePrepTime) { {{ mr.recipePrepTime }}m prep }
+              @if (mr.recipeCookTime) { {{ mr.recipeCookTime }}m cook }
+            }
+            &nbsp;·&nbsp; {{ recipe.steps.length }} step{{ recipe.steps.length !== 1 ? 's' : '' }}
+          </div>
+        </div>
+      }
+    </div>
+
+    <p class="setup-hint">Steps from all recipes will be interleaved so everything finishes at the same time.</p>
+
+    <button mat-raised-button color="primary" class="start-btn" (click)="startCooking()">
+      <mat-icon>play_arrow</mat-icon> Start Cooking
+    </button>
+  </div>
+
+} @else if (screen() === 'cooking') {
+  @let cs = currentStep()!;
+  @let tl = timeline();
+
+  <div class="cook-screen">
+
+    <!-- Sticky header -->
+    <div class="cook-header">
+      <button mat-icon-button (click)="back()"><mat-icon>close</mat-icon></button>
+      <span class="cook-title">{{ meal()!.name }}</span>
+      <span class="step-count">{{ currentIndex() + 1 }}&thinsp;/&thinsp;{{ tl.length }}</span>
+    </div>
+    <mat-progress-bar mode="determinate" [value]="progress()" />
+
+    <div class="step-body">
+
+      <!-- "Start this recipe now" banner -->
+      @if (cs.isRecipeStart) {
+        <div class="start-banner" [style.background]="cs.color.bg" [style.color]="cs.color.text">
+          <mat-icon>alarm</mat-icon>
+          Now start: <strong>{{ cs.recipeTitle }}</strong>
+          ({{ formatOffset(cs.absoluteStart) }} into cooking)
+        </div>
+      }
+
+      <!-- Recipe badge -->
+      <div class="recipe-badge" [style.background]="cs.color.bg" [style.color]="cs.color.text">
+        <mat-icon>{{ cs.step.phase === 'PREP' ? 'cut' : 'local_fire_department' }}</mat-icon>
+        {{ cs.recipeTitle }} — {{ cs.step.phase === 'PREP' ? 'Prep' : 'Cook' }}
+      </div>
+
+      <!-- Step description -->
+      <p class="step-description">{{ cs.step.description }}</p>
+
+      <!-- Timer -->
+      @if (cs.step.durationSeconds > 0) {
+        <div class="timer-card" [class.timer-done]="timerDone()">
+          <div class="timer-display" [class.timer-running]="timerRunning()">{{ timerDisplay() }}</div>
+          <div class="timer-controls">
+            @if (timerDone()) {
+              <button mat-stroked-button (click)="resetTimer()">
+                <mat-icon>replay</mat-icon> Reset
+              </button>
+            } @else if (timerRunning()) {
+              <button mat-stroked-button (click)="pauseTimer()">
+                <mat-icon>pause</mat-icon> Pause
+              </button>
+              <button mat-stroked-button (click)="resetTimer()">
+                <mat-icon>replay</mat-icon> Reset
+              </button>
+            } @else {
+              <button mat-raised-button color="primary" (click)="startTimer()">
+                <mat-icon>play_arrow</mat-icon> Start Timer
+              </button>
+            }
+          </div>
+          @if (timerDone()) {
+            <p class="timer-done-msg">⏰ Done!</p>
+          }
+        </div>
+      }
+
+      <!-- Collapsible ingredients -->
+      <div class="ingredients-toggle">
+        <button mat-button (click)="showIngredients.set(!showIngredients())">
+          <mat-icon>{{ showIngredients() ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ showIngredients() ? 'Hide' : 'Show' }} ingredients for {{ cs.recipeTitle }}
+        </button>
+        @if (showIngredients()) {
+          <ul class="ingredient-list">
+            @for (ing of cs.scaledIngredients; track ing.ingredientId) {
+              <li>
+                <span class="ing-qty">{{ formatQty(ing.scaledQty) }}{{ unitShort(ing.unit) ? '&nbsp;' + unitShort(ing.unit) : '' }}</span>
+                <span class="ing-name">{{ ing.ingredientName }}</span>
+                @if (ing.notes) { <span class="ing-notes">({{ ing.notes }})</span> }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- What's coming next (peek) -->
+      @if (currentIndex() < tl.length - 1) {
+        @let next = tl[currentIndex() + 1];
+        @if (next.recipeTitle !== cs.recipeTitle) {
+          <p class="next-hint">
+            <mat-icon>arrow_forward</mat-icon>
+            Next: <strong>{{ next.recipeTitle }}</strong> — {{ next.step.description | slice:0:60 }}{{ next.step.description.length > 60 ? '…' : '' }}
+          </p>
+        }
+      }
+
+    </div>
+
+    <!-- Fixed footer -->
+    <div class="cook-nav">
+      <button mat-raised-button class="nav-btn" (click)="prevStep()" [disabled]="currentIndex() === 0">
+        <mat-icon>arrow_back</mat-icon> Back
+      </button>
+      <button mat-raised-button color="primary" class="nav-btn" (click)="nextStep()">
+        {{ currentIndex() === tl.length - 1 ? 'Finish' : 'Next' }}
+        <mat-icon>{{ currentIndex() === tl.length - 1 ? 'check' : 'arrow_forward' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+} @else if (screen() === 'done') {
+  <div class="done-screen">
+    <div class="done-body">
+      <mat-icon class="done-icon">check_circle</mat-icon>
+      <h2>All done!</h2>
+      <p>Enjoy your {{ meal()!.name }}.</p>
+      <button mat-raised-button color="primary" (click)="back()">Back to Meals</button>
+    </div>
+  </div>
+}

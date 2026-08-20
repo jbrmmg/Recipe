@@ -49,6 +49,10 @@ export class RecipeDetailComponent implements OnInit {
     this.router.navigate(['/recipes', this.recipe()!.id, 'edit']);
   }
 
+  cook() {
+    this.router.navigate(['/recipes', this.recipe()!.id, 'cook']);
+  }
+
   back() {
     this.router.navigate(['/recipes']);
   }

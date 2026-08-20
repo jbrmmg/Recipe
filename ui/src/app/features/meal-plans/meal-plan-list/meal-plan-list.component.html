@@ -37,6 +37,9 @@
             {{ plan.date | date:'d MMM yyyy':'UTC' }} &middot; {{ mealLabel(plan.entryCount) }}
           </span>
           <div matListItemMeta class="actions">
+            <button mat-icon-button (click)="cookPlan(plan)" aria-label="Cook meals in plan">
+              <mat-icon>play_arrow</mat-icon>
+            </button>
             <button mat-icon-button (click)="editPlan(plan)" aria-label="Edit plan">
               <mat-icon>edit</mat-icon>
             </button>

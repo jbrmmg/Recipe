@@ -66,6 +66,10 @@ export class MealPlanListComponent implements OnInit {
     this.router.navigate(['/meal-plans/new']);
   }
 
+  cookPlan(plan: MealPlanSummary) {
+    this.router.navigate(['/meal-plans', plan.id, 'cook']);
+  }
+
   editPlan(plan: MealPlanSummary) {
     this.router.navigate(['/meal-plans', plan.id, 'edit']);
   }

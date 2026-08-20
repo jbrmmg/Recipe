@@ -26,6 +26,9 @@
             <span matListItemLine class="meal-notes">{{ meal.notes }}</span>
           }
           <div matListItemMeta class="actions">
+            <button mat-icon-button (click)="cookMeal(meal)" aria-label="Cook meal">
+              <mat-icon>play_arrow</mat-icon>
+            </button>
             <button mat-icon-button (click)="editMeal(meal)" aria-label="Edit meal">
               <mat-icon>edit</mat-icon>
             </button>

@@ -1,0 +1,268 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px;
+}
+
+/* ── Setup ───────────────────────────────────────────────────────────── */
+
+.setup-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.setup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.setup-title {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  flex: 1;
+}
+
+.recipe-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recipe-card {
+  border-left: 4px solid;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 0 8px 8px 0;
+}
+
+.recipe-card-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.recipe-card-meta {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+  margin-top: 2px;
+}
+
+.setup-hint {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0;
+  font-style: italic;
+}
+
+.start-btn {
+  width: 100%;
+  height: 52px;
+  font-size: 17px;
+}
+
+/* ── Cook screen ─────────────────────────────────────────────────────── */
+
+.cook-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+}
+
+.cook-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 8px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cook-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-count {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.step-body {
+  flex: 1;
+  padding: 16px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Recipe start banner */
+.start-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+}
+
+/* Recipe badge */
+.recipe-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  align-self: flex-start;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+/* Step description */
+.step-description {
+  font-size: 22px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Timer */
+.timer-card {
+  background: #f5f5f5;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: background 0.3s;
+  &.timer-done { background: #e8f5e9; }
+}
+
+.timer-display {
+  font-size: 64px;
+  font-weight: 200;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: rgba(0, 0, 0, 0.8);
+  margin-bottom: 16px;
+  transition: color 0.3s;
+  &.timer-running { color: #1565c0; }
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timer-done-msg {
+  font-size: 18px;
+  margin: 12px 0 0;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* Ingredients */
+.ingredients-toggle {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 8px;
+}
+
+.ingredient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 8px;
+    font-size: 15px;
+  }
+}
+
+.ing-qty {
+  min-width: 60px;
+  text-align: right;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.65);
+  flex-shrink: 0;
+}
+
+.ing-name { flex: 1; }
+
+.ing-notes {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Next recipe peek */
+.next-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0;
+  font-style: italic;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
+}
+
+/* Navigation */
+.cook-nav {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 12px;
+  padding: 12px 4px;
+}
+
+.nav-btn {
+  flex: 1;
+  height: 52px;
+  font-size: 16px;
+}
+
+/* ── Done ────────────────────────────────────────────────────────────── */
+
+.done-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+}
+
+.done-body {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  h2 { font-size: 28px; margin: 0; }
+  p  { font-size: 18px; color: rgba(0, 0, 0, 0.6); margin: 0; }
+}
+
+.done-icon {
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  color: #43a047;
+}

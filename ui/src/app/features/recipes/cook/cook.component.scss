@@ -1,0 +1,294 @@
+/* ── Loading ─────────────────────────────────────────────────────────── */
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px;
+}
+
+/* ── Setup screen ────────────────────────────────────────────────────── */
+
+.setup-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.setup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 12px;
+}
+
+.setup-title {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  flex: 1;
+}
+
+.setup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 4px;
+}
+
+.servings-card {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.servings-label {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.servings-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.servings-btn {
+  width: 48px;
+  height: 48px;
+}
+
+.servings-value {
+  font-size: 40px;
+  font-weight: 300;
+  min-width: 56px;
+  text-align: center;
+  line-height: 1;
+}
+
+.servings-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.ingredients-section { }
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0 0 8px;
+}
+
+.start-btn {
+  width: 100%;
+  height: 52px;
+  font-size: 17px;
+}
+
+/* ── Cook screen ─────────────────────────────────────────────────────── */
+
+.cook-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+}
+
+.cook-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 8px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cook-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-count {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.step-body {
+  flex: 1;
+  padding: 20px 4px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Phase badge */
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  border-radius: 16px;
+  background: #e3f2fd;
+  color: #1565c0;
+  font-size: 13px;
+  font-weight: 600;
+  align-self: flex-start;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+  &.phase-cook {
+    background: #fff3e0;
+    color: #e65100;
+  }
+}
+
+/* Step description */
+.step-description {
+  font-size: 22px;
+  line-height: 1.55;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Timer */
+.timer-card {
+  background: #f5f5f5;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: background 0.3s;
+
+  &.timer-done {
+    background: #e8f5e9;
+  }
+}
+
+.timer-display {
+  font-size: 64px;
+  font-weight: 200;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: rgba(0, 0, 0, 0.8);
+  margin-bottom: 16px;
+  transition: color 0.3s;
+
+  &.timer-running {
+    color: #1565c0;
+  }
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timer-done-msg {
+  font-size: 18px;
+  margin: 12px 0 0;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* Ingredients toggle */
+.ingredients-toggle {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 8px;
+}
+
+/* Shared ingredient list */
+.ingredient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 0;
+  }
+
+  &.compact li {
+    font-size: 15px;
+    padding: 3px 8px;
+  }
+}
+
+.ing-qty {
+  min-width: 60px;
+  text-align: right;
+  font-weight: 500;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.65);
+  flex-shrink: 0;
+}
+
+.ing-name {
+  font-size: 16px;
+}
+
+.ing-notes {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Navigation footer */
+.cook-nav {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 12px;
+  padding: 12px 4px;
+}
+
+.nav-btn {
+  flex: 1;
+  height: 52px;
+  font-size: 16px;
+}
+
+/* ── Done screen ─────────────────────────────────────────────────────── */
+
+.done-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+}
+
+.done-body {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  h2 { font-size: 28px; margin: 0; }
+  p  { font-size: 18px; color: rgba(0, 0, 0, 0.6); margin: 0; }
+}
+
+.done-icon {
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  color: #43a047;
+}

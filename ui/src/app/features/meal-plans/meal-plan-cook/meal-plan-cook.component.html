@@ -1,0 +1,41 @@
+@if (loading()) {
+  <div class="loading-container"><mat-spinner diameter="40" /></div>
+} @else {
+  @let p = plan()!;
+  <div class="page">
+
+    <div class="header">
+      <button mat-icon-button (click)="back()"><mat-icon>arrow_back</mat-icon></button>
+      <div>
+        <h2 class="plan-name">{{ p.name }}</h2>
+        <p class="plan-date">{{ parseDate(p.date) | date:'d MMM yyyy' }}</p>
+      </div>
+    </div>
+
+    @if (p.entries.length === 0) {
+      <div class="empty-state">
+        <mat-icon>restaurant</mat-icon>
+        <p>No meals in this plan.</p>
+      </div>
+    } @else {
+      <p class="hint">Select a meal to cook:</p>
+      <mat-list>
+        @for (entry of p.entries; track entry.id; let last = $last) {
+          <mat-list-item class="meal-item">
+            <span matListItemTitle>{{ entry.mealName }}</span>
+            @if (entry.dayLabel) {
+              <span matListItemLine class="day-label">{{ entry.dayLabel }}</span>
+            }
+            <div matListItemMeta>
+              <button mat-raised-button color="primary" (click)="cookMeal(entry)">
+                <mat-icon>play_arrow</mat-icon> Cook
+              </button>
+            </div>
+          </mat-list-item>
+          @if (!last) { <mat-divider /> }
+        }
+      </mat-list>
+    }
+
+  </div>
+}

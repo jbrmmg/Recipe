@@ -7,7 +7,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DatePipe } from '@angular/common';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { ShoppingList, ShoppingListItem } from '../../../models/meal-plan.model';
 import { MEASUREMENT_UNITS, INGREDIENT_CATEGORIES } from '../../../models/ingredient.model';
@@ -39,7 +38,6 @@ export interface ShoppingGroup {
     MatCheckboxModule,
     MatDividerModule,
     MatTooltipModule,
-    DatePipe,
   ],
   templateUrl: './shopping-list.component.html',
   styleUrl: './shopping-list.component.scss',

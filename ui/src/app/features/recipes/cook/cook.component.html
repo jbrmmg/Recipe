@@ -1,0 +1,170 @@
+@if (loading()) {
+  <div class="loading-container">
+    <mat-spinner diameter="48" />
+  </div>
+} @else if (recipe()) {
+  @let r = recipe()!;
+
+  <!-- ══ SETUP SCREEN ═══════════════════════════════════════════════════ -->
+  @if (screen() === 'setup') {
+    <div class="setup-screen">
+
+      <div class="setup-header">
+        <button mat-icon-button (click)="back()" aria-label="Back">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="setup-title">{{ r.title }}</h1>
+      </div>
+
+      <div class="setup-body">
+
+        <div class="servings-card">
+          <p class="servings-label">How many servings?</p>
+          <div class="servings-picker">
+            <button mat-icon-button class="servings-btn" (click)="decrementServings()"
+                    [disabled]="servings() <= 1" aria-label="Fewer servings">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span class="servings-value">{{ servings() }}</span>
+            <button mat-icon-button class="servings-btn" (click)="incrementServings()"
+                    [disabled]="servings() >= 99" aria-label="More servings">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          @if (servings() !== r.baseServings) {
+            <p class="servings-note">Recipe is for {{ r.baseServings }} — scaling by {{ (scaleFactor() | number:'1.0-2') }}×</p>
+          }
+        </div>
+
+        @if (scaledIngredients().length > 0) {
+          <div class="ingredients-section">
+            <h2 class="section-title">Ingredients</h2>
+            <ul class="ingredient-list">
+              @for (ing of scaledIngredients(); track ing.ingredientId) {
+                <li>
+                  <span class="ing-qty">{{ formatQty(ing.quantity) }}{{ unitShort(ing.unit) ? '&nbsp;' + unitShort(ing.unit) : '' }}</span>
+                  <span class="ing-name">{{ ing.ingredientName }}</span>
+                  @if (ing.notes) { <span class="ing-notes">({{ ing.notes }})</span> }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <button mat-raised-button color="primary" class="start-btn" (click)="startCooking()">
+          <mat-icon>play_arrow</mat-icon>
+          Start Cooking
+        </button>
+
+      </div>
+    </div>
+  }
+
+  <!-- ══ COOKING SCREEN ════════════════════════════════════════════════ -->
+  @if (screen() === 'cooking') {
+    @let step = currentStep()!;
+    @let steps = allSteps();
+
+    <div class="cook-screen">
+
+      <!-- Sticky header -->
+      <div class="cook-header">
+        <button mat-icon-button (click)="back()" aria-label="Back to recipe">
+          <mat-icon>close</mat-icon>
+        </button>
+        <span class="cook-title">{{ r.title }}</span>
+        <span class="step-count">{{ currentIndex() + 1 }}&thinsp;/&thinsp;{{ steps.length }}</span>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="progress()" />
+
+      <!-- Step body -->
+      <div class="step-body">
+
+        <!-- Phase badge -->
+        <div class="phase-badge" [class.phase-cook]="step.phase === 'COOK'">
+          <mat-icon>{{ step.phase === 'PREP' ? 'cut' : 'local_fire_department' }}</mat-icon>
+          {{ phaseLabel(step) }}
+        </div>
+
+        <!-- Step description -->
+        <p class="step-description">{{ step.description }}</p>
+
+        <!-- Timer (if step has duration) -->
+        @if (step.durationSeconds > 0) {
+          <div class="timer-card" [class.timer-done]="timerDone()">
+            <div class="timer-display" [class.timer-running]="timerRunning()">
+              {{ timerDisplay() }}
+            </div>
+            <div class="timer-controls">
+              @if (timerDone()) {
+                <button mat-stroked-button (click)="resetTimer()">
+                  <mat-icon>replay</mat-icon> Reset
+                </button>
+              } @else if (timerRunning()) {
+                <button mat-stroked-button (click)="pauseTimer()">
+                  <mat-icon>pause</mat-icon> Pause
+                </button>
+                <button mat-stroked-button (click)="resetTimer()">
+                  <mat-icon>replay</mat-icon> Reset
+                </button>
+              } @else {
+                <button mat-raised-button color="primary" (click)="startTimer()">
+                  <mat-icon>play_arrow</mat-icon> Start Timer
+                </button>
+              }
+            </div>
+            @if (timerDone()) {
+              <p class="timer-done-msg">⏰ Done!</p>
+            }
+          </div>
+        }
+
+        <!-- Collapsible ingredient list -->
+        <div class="ingredients-toggle">
+          <button mat-button (click)="showIngredients.set(!showIngredients())">
+            <mat-icon>{{ showIngredients() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ showIngredients() ? 'Hide' : 'Show' }} ingredients ({{ scaledIngredients().length }})
+          </button>
+          @if (showIngredients()) {
+            <ul class="ingredient-list compact">
+              @for (ing of scaledIngredients(); track ing.ingredientId) {
+                <li>
+                  <span class="ing-qty">{{ formatQty(ing.quantity) }}{{ unitShort(ing.unit) ? '&nbsp;' + unitShort(ing.unit) : '' }}</span>
+                  <span class="ing-name">{{ ing.ingredientName }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+      </div>
+
+      <!-- Fixed navigation footer -->
+      <div class="cook-nav">
+        <button mat-raised-button class="nav-btn" (click)="prevStep()"
+                [disabled]="currentIndex() === 0">
+          <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <button mat-raised-button color="primary" class="nav-btn" (click)="nextStep()">
+          {{ currentIndex() === steps.length - 1 ? 'Finish' : 'Next' }}
+          <mat-icon>{{ currentIndex() === steps.length - 1 ? 'check' : 'arrow_forward' }}</mat-icon>
+        </button>
+      </div>
+
+    </div>
+  }
+
+  <!-- ══ DONE SCREEN ════════════════════════════════════════════════════ -->
+  @if (screen() === 'done') {
+    <div class="done-screen">
+      <div class="done-body">
+        <mat-icon class="done-icon">check_circle</mat-icon>
+        <h2>All done!</h2>
+        <p>Enjoy your {{ r.title }}.</p>
+        <button mat-raised-button color="primary" (click)="back()">
+          Back to Recipe
+        </button>
+      </div>
+    </div>
+  }
+}

@@ -49,6 +49,10 @@ export class MealListComponent implements OnInit {
     this.router.navigate(['/meals/new']);
   }
 
+  cookMeal(meal: MealSummary) {
+    this.router.navigate(['/meals', meal.id, 'cook']);
+  }
+
   editMeal(meal: MealSummary) {
     this.router.navigate(['/meals', meal.id, 'edit']);
   }
