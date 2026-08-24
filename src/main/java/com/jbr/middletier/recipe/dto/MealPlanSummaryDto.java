@@ -10,4 +10,5 @@ public class MealPlanSummaryDto {
     private String name;
     private LocalDate date;
     private int entryCount;
+    private Long shoppingListId;
 }

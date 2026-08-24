@@ -3,8 +3,6 @@
     <mat-spinner diameter="40" />
   </div>
 } @else {
-  @let list = shoppingList()!;
-
   <div class="shopping-page">
 
     <!-- Header -->
@@ -15,10 +13,10 @@
         </button>
         <div class="header-title">
           @if (shopMode()) {
-            <h2 class="page-title">Shopping List</h2>
+            <h2 class="page-title">{{ listName() }}</h2>
             <p class="page-subtitle">{{ neededCount() }} item{{ neededCount() !== 1 ? 's' : '' }} to buy</p>
           } @else {
-            <h2 class="page-title">In the Kitchen</h2>
+            <h2 class="page-title">{{ listName() }}</h2>
             <p class="page-subtitle">Tick what you already have</p>
           }
         </div>
@@ -33,12 +31,6 @@
             </button>
           }
         </div>
-      </div>
-
-      <div class="plan-chips">
-        @for (plan of list.plans; track plan.name) {
-          <span class="plan-chip">{{ plan.name }} · {{ formatDate(plan.date) }}</span>
-        }
       </div>
     </div>
 

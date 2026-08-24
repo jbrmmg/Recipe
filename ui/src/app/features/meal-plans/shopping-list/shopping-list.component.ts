@@ -5,10 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MealPlanService } from '../../../services/meal-plan.service';
-import { ShoppingList, ShoppingListItem } from '../../../models/meal-plan.model';
+import { ShoppingListService } from '../../../services/shopping-list.service';
+import { ShoppingListItem } from '../../../models/meal-plan.model';
 import { MEASUREMENT_UNITS, INGREDIENT_CATEGORIES } from '../../../models/ingredient.model';
 
 const UNIT_SHORT: Record<string, string> = Object.fromEntries(
@@ -37,33 +36,31 @@ export interface ShoppingGroup {
     MatProgressSpinnerModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatTooltipModule,
   ],
   templateUrl: './shopping-list.component.html',
   styleUrl: './shopping-list.component.scss',
 })
 export class ShoppingListComponent implements OnInit {
-  private mealPlanService = inject(MealPlanService);
+  private shoppingListService = inject(ShoppingListService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
   loading = signal(true);
-  shoppingList = signal<ShoppingList | null>(null);
+  listName = signal('');
+  items = signal<ShoppingListItem[]>([]);
   checked = signal<Set<string>>(new Set());
-  shopMode = signal(false);  // false = kitchen walk, true = at the shop
+  shopMode = signal(false);
 
   private storageKey = '';
 
   groups = computed<ShoppingGroup[]>(() => {
-    const list = this.shoppingList();
-    if (!list) return [];
     const inShopMode = this.shopMode();
     const checkedSet = this.checked();
 
     const visibleItems = inShopMode
-      ? list.items.filter(i => !checkedSet.has(this.itemKey(i)))
-      : list.items;
+      ? this.items().filter(i => !checkedSet.has(this.itemKey(i)))
+      : this.items();
 
     const byCategory = new Map<string, ShoppingListItem[]>();
     for (const item of visibleItems) {
@@ -79,29 +76,27 @@ export class ShoppingListComponent implements OnInit {
       }));
   });
 
-  neededCount = computed(() => {
-    const list = this.shoppingList();
-    if (!list) return 0;
-    return list.items.filter(i => !this.checked().has(this.itemKey(i))).length;
-  });
+  neededCount = computed(() =>
+    this.items().filter(i => !this.checked().has(this.itemKey(i))).length
+  );
 
   ngOnInit() {
-    const planParam = this.route.snapshot.queryParamMap.get('plans') ?? '';
-    const ids = planParam.split(',').map(Number).filter(Boolean);
-    if (ids.length === 0) {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) {
       this.router.navigate(['/meal-plans']);
       return;
     }
 
-    this.storageKey = `shopping-checked:${ids.slice().sort().join(',')}`;
+    this.storageKey = `shopping-checked:${id}`;
     const saved = localStorage.getItem(this.storageKey);
     if (saved) {
       try { this.checked.set(new Set(JSON.parse(saved))); } catch { /* ignore */ }
     }
 
-    this.mealPlanService.getShoppingList(ids).subscribe({
+    this.shoppingListService.getById(id).subscribe({
       next: list => {
-        this.shoppingList.set(list);
+        this.listName.set(list.name);
+        this.items.set(list.items);
         this.loading.set(false);
       },
       error: () => {
@@ -127,13 +122,8 @@ export class ShoppingListComponent implements OnInit {
     localStorage.setItem(this.storageKey, JSON.stringify(Array.from(next)));
   }
 
-  goShopping() {
-    this.shopMode.set(true);
-  }
-
-  backToKitchen() {
-    this.shopMode.set(false);
-  }
+  goShopping() { this.shopMode.set(true); }
+  backToKitchen() { this.shopMode.set(false); }
 
   clearChecked() {
     this.checked.set(new Set());
@@ -143,14 +133,7 @@ export class ShoppingListComponent implements OnInit {
   formatQty(quantity: number, unit: string): string {
     const short = UNIT_SHORT[unit] ?? unit;
     const rounded = Math.round(quantity * 100) / 100;
-    const num = Number.isInteger(rounded) ? `${rounded}` : `${rounded}`;
-    return short ? `${num} ${short}` : num;
-  }
-
-  formatDate(d: string): string {
-    const [year, month, day] = d.split('-').map(Number);
-    return new Date(year, month - 1, day)
-      .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return short ? `${rounded} ${short}` : `${rounded}`;
   }
 
   back() {

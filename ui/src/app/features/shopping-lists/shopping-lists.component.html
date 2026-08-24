@@ -1,0 +1,39 @@
+<div class="page">
+
+  <div class="toolbar">
+    <h2 class="page-title">Shopping Lists</h2>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (lists().length === 0) {
+    <div class="empty-state">
+      <mat-icon>shopping_cart</mat-icon>
+      <p>No shopping lists yet — create one from a meal plan.</p>
+    </div>
+  } @else {
+    <mat-list>
+      @for (list of lists(); track list.id; let last = $last) {
+        <mat-list-item class="list-item" (click)="view(list)">
+          <mat-icon matListItemIcon>shopping_cart</mat-icon>
+          <span matListItemTitle>{{ list.name }}</span>
+          <span matListItemLine class="list-meta">
+            {{ list.createdDate | date:'d MMM yyyy, HH:mm' }} &middot; {{ itemLabel(list.itemCount) }}
+          </span>
+          <div matListItemMeta class="actions">
+            <button mat-icon-button color="warn" (click)="delete(list); $event.stopPropagation()"
+                    aria-label="Delete shopping list">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        @if (!last) {
+          <mat-divider />
+        }
+      }
+    </mat-list>
+  }
+
+</div>

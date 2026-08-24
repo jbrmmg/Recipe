@@ -22,6 +22,10 @@
         <mat-icon matListItemIcon>kitchen</mat-icon>
         <span matListItemTitle>Ingredients</span>
       </a>
+      <a mat-list-item routerLink="/shopping-lists" routerLinkActive="active-link" (click)="sidenav.close()">
+        <mat-icon matListItemIcon>shopping_cart</mat-icon>
+        <span matListItemTitle>Shopping Lists</span>
+      </a>
       <a mat-list-item routerLink="/tags" routerLinkActive="active-link" (click)="sidenav.close()">
         <mat-icon matListItemIcon>label</mat-icon>
         <span matListItemTitle>Tags</span>

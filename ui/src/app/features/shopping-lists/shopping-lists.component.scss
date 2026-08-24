@@ -1,4 +1,4 @@
-.plan-list-page {
+.page {
   max-width: 800px;
   margin: 0 auto;
 }
@@ -8,12 +8,6 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
-}
-
-.toolbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
 }
 
 .page-title {
@@ -45,20 +39,21 @@
   p { font-size: 18px; margin: 0; }
 }
 
-.plan-item {
+.list-item {
   height: auto !important;
   padding: 8px 0;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
 }
 
-.plan-meta {
+.list-meta {
   color: rgba(0, 0, 0, 0.55);
   font-size: 13px;
 }
 
 .actions {
   display: flex;
-}
-
-.has-list {
-  color: #1565c0;
 }

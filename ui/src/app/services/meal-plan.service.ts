@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { MealPlanSummary, MealPlanDetail, ShoppingList } from '../models/meal-plan.model';
+import { MealPlanSummary, MealPlanDetail } from '../models/meal-plan.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -23,12 +23,6 @@ export class MealPlanService {
 
   update(id: number, payload: object): Observable<MealPlanDetail> {
     return this.http.put<MealPlanDetail>(`${this.url}/${id}`, payload);
-  }
-
-  getShoppingList(ids: number[]): Observable<ShoppingList> {
-    return this.http.get<ShoppingList>(`${this.url}/shopping-list`, {
-      params: { ids: ids.map(String) },
-    });
   }
 
   delete(id: number): Observable<void> {

@@ -4,28 +4,23 @@ import com.jbr.middletier.recipe.dto.MealPlanDetailDto;
 import com.jbr.middletier.recipe.dto.MealPlanDto;
 import com.jbr.middletier.recipe.dto.MealPlanEntryDto;
 import com.jbr.middletier.recipe.dto.MealPlanSummaryDto;
-import com.jbr.middletier.recipe.dto.ShoppingListDto;
-import com.jbr.middletier.recipe.dto.ShoppingListItemDto;
-import com.jbr.middletier.recipe.dto.ShoppingPlanInfo;
 import com.jbr.middletier.recipe.dto.mapper.MealPlanMapper;
 import com.jbr.middletier.recipe.exception.ResourceNotFoundException;
 import com.jbr.middletier.recipe.model.Meal;
 import com.jbr.middletier.recipe.model.MealPlan;
 import com.jbr.middletier.recipe.model.MealPlanEntry;
-import com.jbr.middletier.recipe.model.MealRecipe;
-import com.jbr.middletier.recipe.model.RecipeIngredient;
+import com.jbr.middletier.recipe.model.ShoppingList;
 import com.jbr.middletier.recipe.repository.MealPlanRepository;
 import com.jbr.middletier.recipe.repository.MealRepository;
+import com.jbr.middletier.recipe.repository.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +29,23 @@ public class MealPlanService {
     private final MealPlanRepository mealPlanRepository;
     private final MealRepository mealRepository;
     private final MealPlanMapper mealPlanMapper;
+    private final ShoppingListRepository shoppingListRepository;
 
     public List<MealPlanSummaryDto> findAll() {
-        return mealPlanMapper.toSummaryDtoList(
-                mealPlanRepository.findAll(Sort.by(Sort.Direction.ASC, "date")));
+        List<MealPlan> plans = mealPlanRepository.findAll(Sort.by(Sort.Direction.ASC, "date"));
+        Map<Long, Long> shoppingMap = shoppingListRepository.findAll().stream()
+                .collect(Collectors.toMap(ShoppingList::getMealPlanId, ShoppingList::getId));
+        return plans.stream().map(p -> {
+            MealPlanSummaryDto dto = mealPlanMapper.toSummaryDto(p);
+            dto.setShoppingListId(shoppingMap.get(p.getId()));
+            return dto;
+        }).toList();
     }
 
     public MealPlanDetailDto findById(Long id) {
-        return mealPlanMapper.toDetailDto(getOrThrow(id));
+        MealPlanDetailDto dto = mealPlanMapper.toDetailDto(getOrThrow(id));
+        shoppingListRepository.findByMealPlanId(id).ifPresent(sl -> dto.setShoppingListId(sl.getId()));
+        return dto;
     }
 
     @Transactional
@@ -80,49 +84,6 @@ public class MealPlanService {
             }
         }
         return plan;
-    }
-
-    public ShoppingListDto getShoppingList(List<Long> planIds) {
-        Map<String, double[]> totals = new LinkedHashMap<>();
-        Map<String, RecipeIngredient> firstSeen = new LinkedHashMap<>();
-        List<ShoppingPlanInfo> planInfos = new ArrayList<>();
-
-        for (Long planId : planIds) {
-            MealPlan plan = getOrThrow(planId);
-            planInfos.add(new ShoppingPlanInfo(plan.getName(), plan.getDate()));
-
-            for (MealPlanEntry planEntry : plan.getEntries()) {
-                Meal meal = planEntry.getMeal();
-                for (MealRecipe mealRecipe : meal.getMealRecipes()) {
-                    double scaleFactor = (double) mealRecipe.getServings() / mealRecipe.getRecipe().getBaseServings();
-                    for (RecipeIngredient ri : mealRecipe.getRecipe().getIngredients()) {
-                        String key = ri.getIngredient().getId() + ":" + ri.getUnit();
-                        totals.merge(key, new double[]{ri.getQuantity() * scaleFactor},
-                                (a, b) -> new double[]{a[0] + b[0]});
-                        firstSeen.putIfAbsent(key, ri);
-                    }
-                }
-            }
-        }
-
-        List<ShoppingListItemDto> items = new ArrayList<>();
-        for (Map.Entry<String, double[]> entry : totals.entrySet()) {
-            RecipeIngredient ri = firstSeen.get(entry.getKey());
-            items.add(new ShoppingListItemDto(
-                    ri.getIngredient().getId(),
-                    ri.getIngredient().getName(),
-                    ri.getIngredient().getCategory().name(),
-                    ri.getUnit().name(),
-                    entry.getValue()[0]
-            ));
-        }
-        items.sort(Comparator.comparing(ShoppingListItemDto::getCategory)
-                .thenComparing(ShoppingListItemDto::getIngredientName));
-
-        ShoppingListDto dto = new ShoppingListDto();
-        dto.setPlans(planInfos);
-        dto.setItems(items);
-        return dto;
     }
 
     private MealPlan getOrThrow(Long id) {

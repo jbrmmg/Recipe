@@ -1,0 +1,31 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 013-shopping-list
+      author: jbrmmg
+      changes:
+        - createTable:
+            tableName: shopping_list
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: meal_plan_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false

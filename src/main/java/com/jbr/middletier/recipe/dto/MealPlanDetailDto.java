@@ -10,5 +10,6 @@ public class MealPlanDetailDto {
     private Long id;
     private String name;
     private LocalDate date;
+    private Long shoppingListId;
     private List<MealPlanEntryDto> entries;
 }

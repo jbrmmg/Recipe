@@ -11,13 +11,31 @@ export interface MealPlanSummary {
   name: string;
   date: string;
   entryCount: number;
+  shoppingListId?: number;
 }
 
 export interface MealPlanDetail {
   id: number;
   name: string;
   date: string;
+  shoppingListId?: number;
   entries: MealPlanEntry[];
+}
+
+export interface SavedShoppingListSummary {
+  id: number;
+  name: string;
+  mealPlanId: number;
+  createdDate: string;
+  itemCount: number;
+}
+
+export interface SavedShoppingListDetail {
+  id: number;
+  name: string;
+  mealPlanId: number;
+  createdDate: string;
+  items: ShoppingListItem[];
 }
 
 export interface ShoppingListItem {
