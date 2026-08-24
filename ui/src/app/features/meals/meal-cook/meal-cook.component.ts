@@ -10,12 +10,6 @@ import { MealService } from '../../../services/meal.service';
 import { RecipeService } from '../../../services/recipe.service';
 import { MealDetail } from '../../../models/meal.model';
 import { RecipeDetail, RecipeStep } from '../../../models/recipe.model';
-import { MEASUREMENT_UNITS } from '../../../models/ingredient.model';
-
-const UNIT_SHORT: Record<string, string> = Object.fromEntries(
-  MEASUREMENT_UNITS.map(u => [u.value, u.short])
-);
-
 const RECIPE_COLORS = [
   { bg: '#e3f2fd', text: '#1565c0' },
   { bg: '#fff3e0', text: '#e65100' },
@@ -24,22 +18,33 @@ const RECIPE_COLORS = [
   { bg: '#fce4ec', text: '#c62828' },
 ];
 
+// px per second — all columns share this scale so heights are comparable
+const GANTT_SCALE = 2;
+
 interface PrepStep { key: string; description: string; }
 interface PrepGroup { recipeId: number; title: string; color: { bg: string; text: string }; steps: PrepStep[]; }
+
 interface StepBlock {
   key: string;
-  absoluteStart: number;
+  absoluteStart: number;   // seconds from cook t=0
   durationSeconds: number;
   steps: RecipeStep[];
   isParallelGroup: boolean;
 }
+
 interface GanttRecipe {
   recipeId: number;
   title: string;
   color: { bg: string; text: string };
-  startOffset: number;
-  totalDuration: number;
+  startOffset: number;      // seconds before first step
+  totalDuration: number;    // sum of block durations
   blocks: StepBlock[];
+}
+
+interface BlockTimerState {
+  remaining: number;
+  done: boolean;
+  initialDuration: number;
 }
 
 @Component({
@@ -66,18 +71,17 @@ export class MealCookComponent implements OnInit, OnDestroy {
   prepChecked = signal<Set<string>>(new Set());
 
   // Running clock
-  cookStartTime = signal<number | null>(null);
+  cookStartTime  = signal<number | null>(null);
   elapsedSeconds = signal(0);
   private clockHandle: ReturnType<typeof setInterval> | null = null;
 
-  // Per-step countdown timer
-  timerKey       = signal<string | null>(null);
-  timerRemaining = signal(0);
-  timerRunning   = signal(false);
-  timerDone      = signal(false);
-  private timerHandle: ReturnType<typeof setInterval> | null = null;
+  // Per-block timer states — each block has its own interval, multiple can run at once
+  blockTimers  = signal<Map<string, BlockTimerState>>(new Map());
+  runningKeys  = signal<Set<string>>(new Set());
+  private timerHandles = new Map<string, ReturnType<typeof setInterval>>();
 
   private wakeLock: any = null;
+  readonly GANTT_SCALE = GANTT_SCALE;
 
   // ── Computed ─────────────────────────────────────────────────────────
 
@@ -91,11 +95,6 @@ export class MealCookComponent implements OnInit, OnDestroy {
     return h > 0
       ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
       : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  });
-
-  timerDisplay = computed(() => {
-    const r = this.timerRemaining();
-    return `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
   });
 
   recipeColors = computed(() => this.recipes().map((_, i) => RECIPE_COLORS[i % RECIPE_COLORS.length]));
@@ -124,10 +123,14 @@ export class MealCookComponent implements OnInit, OnDestroy {
     const meal    = this.meal();
     if (!meal || recipes.length === 0) return [];
 
-    const data = recipes.map((recipe, i) => {
-      const cookSteps = recipe.steps.filter(s => s.phase === 'COOK').sort((a, b) => a.stepOrder - b.stepOrder);
-      return { recipe, cookSteps, duration: this.calcCookDuration(cookSteps), color: RECIPE_COLORS[i % RECIPE_COLORS.length] };
-    }).filter(d => d.cookSteps.length > 0);
+    const data = recipes
+      .map((recipe, i) => {
+        const cookSteps = recipe.steps
+          .filter(s => s.phase === 'COOK')
+          .sort((a, b) => a.stepOrder - b.stepOrder);
+        return { recipe, cookSteps, duration: this.calcCookDuration(cookSteps), color: RECIPE_COLORS[i % RECIPE_COLORS.length] };
+      })
+      .filter(d => d.cookSteps.length > 0);
 
     if (data.length === 0) return [];
 
@@ -135,21 +138,44 @@ export class MealCookComponent implements OnInit, OnDestroy {
 
     return data.map(({ recipe, cookSteps, duration, color }) => {
       const startOffset = maxDuration - duration;
-      return {
-        recipeId: recipe.id,
-        title: recipe.title,
-        color,
-        startOffset,
-        totalDuration: duration,
-        blocks: this.buildBlocks(cookSteps, startOffset),
-      };
+      return { recipeId: recipe.id, title: recipe.title, color, startOffset, totalDuration: duration, blocks: this.buildBlocks(cookSteps, startOffset) };
     });
   });
 
   totalDurationSeconds = computed(() =>
-    this.ganttRecipes().length === 0 ? 0
-      : Math.max(...this.ganttRecipes().map(r => r.startOffset + r.totalDuration))
+    this.ganttRecipes().length === 0 ? 0 : Math.max(...this.ganttRecipes().map(r => r.startOffset + r.totalDuration))
   );
+
+  // Height in px of each column body (identical for all recipes)
+  colBodyHeight = computed(() => Math.max(200, this.totalDurationSeconds() * GANTT_SCALE));
+
+  // The running timer with the soonest remaining time (for the panel)
+  nextTimerInfo = computed<{ key: string; state: BlockTimerState; recipe: GanttRecipe; block: StepBlock } | null>(() => {
+    const running = this.runningKeys();
+    if (running.size === 0) return null;
+    const timers = this.blockTimers();
+    let soonest: { key: string; state: BlockTimerState; recipe: GanttRecipe; block: StepBlock } | null = null;
+    for (const recipe of this.ganttRecipes()) {
+      for (const block of recipe.blocks) {
+        if (!running.has(block.key)) continue;
+        const state = timers.get(block.key);
+        if (!state || state.done) continue;
+        if (!soonest || state.remaining < soonest.state.remaining) {
+          soonest = { key: block.key, state, recipe, block };
+        }
+      }
+    }
+    return soonest;
+  });
+
+  runningTimerCount = computed(() => this.runningKeys().size);
+
+  nextTimerDisplay = computed(() => {
+    const info = this.nextTimerInfo();
+    if (!info) return '00:00';
+    const r = info.state.remaining;
+    return `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+  });
 
   // ── Lifecycle ────────────────────────────────────────────────────────
 
@@ -174,7 +200,8 @@ export class MealCookComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopClock();
-    this.stopTimer();
+    for (const h of this.timerHandles.values()) clearInterval(h);
+    this.timerHandles.clear();
     this.wakeLock?.release();
   }
 
@@ -193,7 +220,8 @@ export class MealCookComponent implements OnInit, OnDestroy {
   finish() {
     this.screen.set('done');
     this.stopClock();
-    this.stopTimer();
+    for (const h of this.timerHandles.values()) clearInterval(h);
+    this.timerHandles.clear();
     this.wakeLock?.release();
     this.wakeLock = null;
   }
@@ -224,67 +252,87 @@ export class MealCookComponent implements OnInit, OnDestroy {
     this.prepChecked.set(next);
   }
 
-  // ── Step timer ───────────────────────────────────────────────────────
+  // ── Step timers ──────────────────────────────────────────────────────
 
   tapBlock(block: StepBlock) {
     if (block.durationSeconds <= 0) return;
-    if (this.timerKey() === block.key) {
-      this.timerRunning() ? this.pauseTimer() : this.resumeTimer();
+    const key = block.key;
+
+    if (this.timerHandles.has(key)) {
+      // Toggle: pause this block's timer
+      clearInterval(this.timerHandles.get(key)!);
+      this.timerHandles.delete(key);
+      const rk = new Set(this.runningKeys());
+      rk.delete(key);
+      this.runningKeys.set(rk);
       return;
     }
-    this.stopTimer();
-    this.timerKey.set(block.key);
-    this.timerRemaining.set(block.durationSeconds);
-    this.timerDone.set(false);
-    this.timerRunning.set(true);
-    this.runTimerTick();
+
+    // Start (or resume) this block's timer independently
+    const states = new Map(this.blockTimers());
+    if (!states.has(key)) {
+      states.set(key, { remaining: block.durationSeconds, initialDuration: block.durationSeconds, done: false });
+      this.blockTimers.set(states);
+    }
+    const handle = setInterval(() => this.tickBlock(key), 1000);
+    this.timerHandles.set(key, handle);
+    const rk = new Set(this.runningKeys());
+    rk.add(key);
+    this.runningKeys.set(rk);
   }
 
-  toggleBlockTimer() { this.timerRunning() ? this.pauseTimer() : this.resumeTimer(); }
-
-  resetBlockTimer() {
-    this.stopTimer();
-    this.timerKey.set(null);
-    this.timerRemaining.set(0);
-    this.timerDone.set(false);
+  pauseTimer(key: string) {
+    if (!this.timerHandles.has(key)) return;
+    clearInterval(this.timerHandles.get(key)!);
+    this.timerHandles.delete(key);
+    const rk = new Set(this.runningKeys());
+    rk.delete(key);
+    this.runningKeys.set(rk);
   }
 
-  private pauseTimer() {
-    if (this.timerHandle !== null) { clearInterval(this.timerHandle); this.timerHandle = null; }
-    this.timerRunning.set(false);
+  resetBlockTimer(key: string) {
+    this.pauseTimer(key);
+    const states = new Map(this.blockTimers());
+    states.delete(key);
+    this.blockTimers.set(states);
   }
 
-  private resumeTimer() {
-    if (this.timerRunning() || this.timerRemaining() <= 0) return;
-    this.timerRunning.set(true);
-    this.runTimerTick();
+  getBlockTimer(key: string): BlockTimerState | null {
+    return this.blockTimers().get(key) ?? null;
   }
 
-  private runTimerTick() {
-    this.timerHandle = setInterval(() => {
-      const next = this.timerRemaining() - 1;
-      if (next <= 0) {
-        this.timerRemaining.set(0);
-        this.timerDone.set(true);
-        this.timerRunning.set(false);
-        clearInterval(this.timerHandle!);
-        this.timerHandle = null;
-        this.playBeep();
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Timer done! ⏰');
-        }
-      } else {
-        this.timerRemaining.set(next);
+  blockTimerDisplay(key: string): string {
+    const state = this.blockTimers().get(key);
+    if (!state) return '';
+    const r = state.remaining;
+    return `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+  }
+
+  private tickBlock(key: string) {
+    const states = new Map(this.blockTimers());
+    const state  = states.get(key);
+    if (!state) return;
+
+    const next = state.remaining - 1;
+    if (next <= 0) {
+      states.set(key, { ...state, remaining: 0, done: true });
+      this.blockTimers.set(states);
+      clearInterval(this.timerHandles.get(key)!);
+      this.timerHandles.delete(key);
+      const rk = new Set(this.runningKeys());
+      rk.delete(key);
+      this.runningKeys.set(rk);
+      this.playBeep();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Timer done! ⏰');
       }
-    }, 1000);
+    } else {
+      states.set(key, { ...state, remaining: next });
+      this.blockTimers.set(states);
+    }
   }
 
-  private stopTimer() {
-    if (this.timerHandle !== null) { clearInterval(this.timerHandle); this.timerHandle = null; }
-    this.timerRunning.set(false);
-  }
-
-  // ── Block state ──────────────────────────────────────────────────────
+  // ── Block state for highlighting ─────────────────────────────────────
 
   isBlockActive(block: StepBlock): boolean {
     if (!this.cookingStarted() || block.durationSeconds === 0) return false;
@@ -338,8 +386,9 @@ export class MealCookComponent implements OnInit, OnDestroy {
     return blocks;
   }
 
-  blockHeight(seconds: number): number { return Math.max(80, seconds * 0.5); }
-  waitHeight(seconds: number): number  { return Math.max(56, seconds * 0.5); }
+  blockTop(block: StepBlock): number { return block.absoluteStart * GANTT_SCALE; }
+  blockHeight(block: StepBlock): number { return Math.max(40, block.durationSeconds * GANTT_SCALE); }
+  waitHeight(offsetSeconds: number): number { return offsetSeconds * GANTT_SCALE; }
 
   formatDuration(seconds: number): string {
     if (seconds <= 0) return '';
@@ -356,15 +405,11 @@ export class MealCookComponent implements OnInit, OnDestroy {
 
   prepCount(recipe: RecipeDetail): number { return recipe.steps.filter(s => s.phase === 'PREP').length; }
 
-  formatQty(qty: number): string { return qty % 1 === 0 ? `${qty}` : parseFloat(qty.toFixed(2)).toString(); }
-  unitShort(unit: string): string { return UNIT_SHORT[unit] ?? ''; }
-
   private playBeep() {
     try {
       const ctx = new AudioContext();
       [0, 0.45, 0.9].forEach(delay => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
         osc.type = 'sine'; osc.frequency.value = 880;
         osc.start(ctx.currentTime + delay);

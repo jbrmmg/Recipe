@@ -103,6 +103,40 @@
           }
         </div>
 
+        <!-- Running timer panel: shows the soonest-to-finish running timer -->
+        @if (nextTimerInfo(); as info) {
+          <div class="timer-panel" [style.border-left-color]="info.recipe.color.text">
+            <div class="timer-panel-info">
+              <div class="timer-panel-recipe" [style.color]="info.recipe.color.text">
+                {{ info.recipe.title }}
+                @if (runningTimerCount() > 1) {
+                  <span class="timer-panel-count"> (+{{ runningTimerCount() - 1 }} more running)</span>
+                }
+              </div>
+              <div class="timer-panel-desc">
+                @if (info.block.isParallelGroup) {
+                  @for (step of info.block.steps; track step.id) {
+                    <div>{{ step.description }}</div>
+                  }
+                } @else {
+                  {{ info.block.steps[0].description }}
+                }
+              </div>
+            </div>
+            <div class="timer-panel-clock">
+              <div class="timer-countdown timer-running">{{ nextTimerDisplay() }}</div>
+              <div class="timer-controls">
+                <button mat-icon-button (click)="pauseTimer(info.key)">
+                  <mat-icon>pause</mat-icon>
+                </button>
+                <button mat-icon-button (click)="resetBlockTimer(info.key)">
+                  <mat-icon>replay</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Gantt -->
         @if (ganttRecipes().length === 0) {
           <div class="empty-hint">
@@ -114,7 +148,7 @@
             @for (recipe of ganttRecipes(); track recipe.recipeId) {
               <div class="recipe-col">
 
-                <!-- Column header -->
+                <!-- Column header (outside col-body so it stays in normal flow) -->
                 <div class="col-header" [style.background]="recipe.color.bg" [style.color]="recipe.color.text">
                   <span class="col-title">{{ recipe.title }}</span>
                   @if (recipe.startOffset === 0) {
@@ -124,75 +158,71 @@
                   }
                 </div>
 
-                <!-- Wait block -->
-                @if (recipe.startOffset > 0) {
-                  <div class="wait-block" [style.min-height.px]="waitHeight(recipe.startOffset)">
-                    <mat-icon>hourglass_empty</mat-icon>
-                    <span>Start after {{ formatDuration(recipe.startOffset) }}</span>
-                  </div>
-                }
+                <!-- Fixed-height body: all col-bodies same height so columns bottom-align -->
+                <div class="col-body" [style.height.px]="colBodyHeight()">
 
-                <!-- Step blocks -->
-                @for (block of recipe.blocks; track block.key) {
-                  <div class="step-block"
-                       [class.step-active]="isBlockActive(block)"
-                       [class.step-past]="isBlockPast(block)"
-                       [class.step-timing]="timerKey() === block.key"
-                       [style.border-left-color]="recipe.color.text"
-                       [style.min-height.px]="blockHeight(block.durationSeconds)"
-                       (click)="tapBlock(block)">
-
-                    <!-- Step header row -->
-                    <div class="block-meta">
-                      @if (cookingStarted() && block.durationSeconds > 0) {
-                        <span class="block-start">T+{{ formatDuration(block.absoluteStart) }}</span>
-                      }
-                      @if (block.durationSeconds > 0) {
-                        <span class="block-dur">{{ formatDuration(block.durationSeconds) }}</span>
-                      }
+                  <!-- Wait block (absolutely positioned at top) -->
+                  @if (recipe.startOffset > 0) {
+                    <div class="wait-block"
+                         [style.top.px]="0"
+                         [style.height.px]="waitHeight(recipe.startOffset)">
+                      <mat-icon>hourglass_empty</mat-icon>
+                      <span>Start after {{ formatDuration(recipe.startOffset) }}</span>
                     </div>
+                  }
 
-                    <!-- Step descriptions -->
-                    @if (block.isParallelGroup) {
-                      @for (step of block.steps; track step.id) {
-                        <p class="block-desc parallel-step">
-                          <mat-icon class="parallel-icon">call_split</mat-icon>
-                          {{ step.description }}
-                        </p>
-                      }
-                    } @else {
-                      <p class="block-desc">{{ block.steps[0].description }}</p>
-                    }
+                  <!-- Step blocks (absolutely positioned by time) -->
+                  @for (block of recipe.blocks; track block.key) {
+                    @if (block.durationSeconds > 0) {
+                      @let timer = getBlockTimer(block.key);
+                      <div class="step-block"
+                           [class.step-active]="isBlockActive(block)"
+                           [class.step-past]="isBlockPast(block)"
+                           [class.step-timing]="runningKeys().has(block.key)"
+                           [style.border-left-color]="recipe.color.text"
+                           [style.top.px]="blockTop(block)"
+                           [style.height.px]="blockHeight(block)"
+                           (click)="tapBlock(block)">
 
-                    <!-- Timer section -->
-                    @if (timerKey() === block.key) {
-                      <div class="timer-section" (click)="$event.stopPropagation()">
-                        @if (timerDone()) {
-                          <div class="timer-done">⏰ Done!</div>
-                          <button mat-stroked-button (click)="resetBlockTimer()">
-                            <mat-icon>replay</mat-icon> Reset
-                          </button>
+                        <!-- Header row: T+ offset and duration -->
+                        <div class="block-meta">
+                          @if (cookingStarted()) {
+                            <span class="block-start">T+{{ formatDuration(block.absoluteStart) }}</span>
+                          }
+                          <span class="block-dur">{{ formatDuration(block.durationSeconds) }}</span>
+                        </div>
+
+                        <!-- Step descriptions -->
+                        @if (block.isParallelGroup) {
+                          @for (step of block.steps; track step.id) {
+                            <p class="block-desc parallel-step">
+                              <mat-icon class="parallel-icon">call_split</mat-icon>
+                              {{ step.description }}
+                            </p>
+                          }
                         } @else {
-                          <div class="timer-countdown" [class.timer-running]="timerRunning()">
-                            {{ timerDisplay() }}
-                          </div>
-                          <div class="timer-controls">
-                            <button mat-icon-button (click)="toggleBlockTimer()">
-                              <mat-icon>{{ timerRunning() ? 'pause' : 'play_arrow' }}</mat-icon>
-                            </button>
-                            <button mat-icon-button (click)="resetBlockTimer()">
-                              <mat-icon>replay</mat-icon>
-                            </button>
-                          </div>
+                          <p class="block-desc">{{ block.steps[0].description }}</p>
                         }
-                      </div>
-                    } @else if (block.durationSeconds > 0) {
-                      <div class="tap-hint">Tap to time</div>
-                    }
 
-                  </div>
-                }
-              </div>
+                        <!-- Compact timer badge (shown when block has been timed) -->
+                        @if (runningKeys().has(block.key)) {
+                          <div class="block-timer-badge running">▶ {{ blockTimerDisplay(block.key) }}</div>
+                        } @else if (timer) {
+                          @if (timer.done) {
+                            <div class="block-timer-badge done">✓ Done</div>
+                          } @else {
+                            <div class="block-timer-badge paused">⏸ {{ blockTimerDisplay(block.key) }}</div>
+                          }
+                        } @else {
+                          <div class="tap-hint">Tap to time</div>
+                        }
+
+                      </div>
+                    }
+                  }
+
+                </div><!-- /col-body -->
+              </div><!-- /recipe-col -->
             }
           </div>
         }
