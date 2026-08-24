@@ -5,7 +5,6 @@ export interface RecipeSummary {
   title: string;
   description?: string;
   baseServings: number;
-  prepTime?: number;
   cookTime?: number;
   imagePath?: string;
   tags: string[];
@@ -35,7 +34,6 @@ export interface RecipeDetail {
   title: string;
   description?: string;
   baseServings: number;
-  prepTime?: number;
   cookTime?: number;
   imagePath?: string;
   tags: Tag[];

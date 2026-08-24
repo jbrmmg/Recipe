@@ -41,12 +41,9 @@
           }
           <mat-card-header>
             <mat-card-title>{{ recipe.title }}</mat-card-title>
-            @if (recipe.prepTime || recipe.cookTime || recipe.baseServings) {
+            @if (recipe.cookTime || recipe.baseServings) {
               <mat-card-subtitle>
                 <span class="time-info">
-                  @if (recipe.prepTime) {
-                    <span><mat-icon>schedule</mat-icon> {{ formatTime(recipe.prepTime) }} prep</span>
-                  }
                   @if (recipe.cookTime) {
                     <span><mat-icon>local_fire_department</mat-icon> {{ formatTime(recipe.cookTime) }} cook</span>
                   }

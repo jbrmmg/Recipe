@@ -18,8 +18,6 @@ public class RecipeDto {
     @Positive
     private int baseServings;
 
-    private Integer prepTime;
-    private Integer cookTime;
     private String imagePath;
 
     private List<Long> tagIds = new ArrayList<>();

@@ -32,3 +32,6 @@ databaseChangeLog:
 
   - include:
       file: /db/changelog/db.changelog-011-meal-plan-date.yaml
+
+  - include:
+      file: /db/changelog/db.changelog-012-remove-prep-time.yaml

@@ -27,12 +27,7 @@
           <mat-icon>people</mat-icon> {{ r.baseServings }} servings
         </span>
       }
-      @if (r.prepTime) {
-        <span class="meta-item">
-          <mat-icon>schedule</mat-icon> {{ formatTime(r.prepTime) }} prep
-        </span>
-      }
-      @if (r.cookTime) {
+@if (r.cookTime) {
         <span class="meta-item">
           <mat-icon>local_fire_department</mat-icon> {{ formatTime(r.cookTime) }} cook
         </span>
@@ -97,16 +92,6 @@
                   <div class="step-body">
                     <p class="step-description">{{ step.description }}</p>
                     <div class="step-meta">
-                      @if (step.durationSeconds) {
-                        <span class="step-tag">
-                          <mat-icon>timer</mat-icon> {{ formatDuration(step.durationSeconds) }}
-                        </span>
-                      }
-                      @if (step.timerRequired) {
-                        <span class="step-tag alarm">
-                          <mat-icon>alarm</mat-icon> alarm
-                        </span>
-                      }
                       @if (parallelGroupLabel(step, prepSteps())) {
                         <span class="step-tag parallel">
                           <mat-icon>call_split</mat-icon> {{ parallelGroupLabel(step, prepSteps()) }}

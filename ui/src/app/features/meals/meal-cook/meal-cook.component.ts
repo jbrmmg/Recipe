@@ -120,10 +120,10 @@ export class MealCookComponent implements OnInit, OnDestroy {
     const recipes = this.recipes();
 
     const durations = recipes.map((recipe, i) => {
-      const timed = recipe.steps.reduce((s, st) => s + (st.durationSeconds || 0), 0);
+      const timed = recipe.steps.filter(s => s.phase === 'COOK').reduce((s, st) => s + (st.durationSeconds || 0), 0);
       if (timed > 0) return timed;
       const mr = meal.recipes[i];
-      return ((mr.recipePrepTime || 0) + (mr.recipeCookTime || 0)) * 60;
+      return (mr.recipeCookTime || 0) * 60;
     });
 
     const maxDuration = Math.max(0, ...durations);

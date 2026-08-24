@@ -1,0 +1,9 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 012-remove-prep-time
+      author: jbrmmg
+      changes:
+        - dropColumn:
+            tableName: recipe
+            columnName: prep_time

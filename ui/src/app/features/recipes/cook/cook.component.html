@@ -89,8 +89,8 @@
         <!-- Step description -->
         <p class="step-description">{{ step.description }}</p>
 
-        <!-- Timer (if step has duration) -->
-        @if (step.durationSeconds > 0) {
+        <!-- Timer (cook steps only) -->
+        @if (step.phase === 'COOK' && step.durationSeconds > 0) {
           <div class="timer-card" [class.timer-done]="timerDone()">
             <div class="timer-display" [class.timer-running]="timerRunning()">
               {{ timerDisplay() }}

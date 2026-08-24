@@ -17,10 +17,8 @@
           <div class="recipe-card-title">{{ recipe.title }}</div>
           <div class="recipe-card-meta">
             {{ mr.servings }} serving{{ mr.servings !== 1 ? 's' : '' }}
-            @if (mr.recipePrepTime || mr.recipeCookTime) {
-              &nbsp;·&nbsp;
-              @if (mr.recipePrepTime) { {{ mr.recipePrepTime }}m prep }
-              @if (mr.recipeCookTime) { {{ mr.recipeCookTime }}m cook }
+            @if (mr.recipeCookTime) {
+              &nbsp;·&nbsp; {{ mr.recipeCookTime }}m cook
             }
             &nbsp;·&nbsp; {{ recipe.steps.length }} step{{ recipe.steps.length !== 1 ? 's' : '' }}
           </div>
@@ -69,8 +67,8 @@
       <!-- Step description -->
       <p class="step-description">{{ cs.step.description }}</p>
 
-      <!-- Timer -->
-      @if (cs.step.durationSeconds > 0) {
+      <!-- Timer (cook steps only) -->
+      @if (cs.step.phase === 'COOK' && cs.step.durationSeconds > 0) {
         <div class="timer-card" [class.timer-done]="timerDone()">
           <div class="timer-display" [class.timer-running]="timerRunning()">{{ timerDisplay() }}</div>
           <div class="timer-controls">

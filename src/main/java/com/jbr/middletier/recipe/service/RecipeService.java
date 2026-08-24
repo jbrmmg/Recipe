@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -70,8 +72,7 @@ public class RecipeService {
         recipe.setTitle(dto.getTitle());
         recipe.setDescription(dto.getDescription());
         recipe.setBaseServings(dto.getBaseServings());
-        recipe.setPrepTime(dto.getPrepTime());
-        recipe.setCookTime(dto.getCookTime());
+        recipe.setCookTime(calculateCookTimeMinutes(dto.getSteps()));
         recipe.setImagePath(dto.getImagePath());
 
         // Resolve tags
@@ -110,6 +111,21 @@ public class RecipeService {
         });
 
         return recipe;
+    }
+
+    private int calculateCookTimeMinutes(List<com.jbr.middletier.recipe.dto.RecipeStepDto> steps) {
+        Map<Integer, Integer> parallelMaxSeconds = new HashMap<>();
+        int totalSeconds = 0;
+        for (var step : steps) {
+            if (!"COOK".equals(step.getPhase())) continue;
+            if (step.getParallelGroup() == null) {
+                totalSeconds += step.getDurationSeconds();
+            } else {
+                parallelMaxSeconds.merge(step.getParallelGroup(), step.getDurationSeconds(), Math::max);
+            }
+        }
+        totalSeconds += parallelMaxSeconds.values().stream().mapToInt(Integer::intValue).sum();
+        return (int) Math.ceil(totalSeconds / 60.0);
     }
 
     private Recipe getOrThrow(Long id) {

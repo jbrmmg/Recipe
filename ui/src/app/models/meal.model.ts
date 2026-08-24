@@ -2,7 +2,6 @@ export interface MealRecipeItem {
   id?: number;
   recipeId: number;
   recipeTitle?: string;
-  recipePrepTime?: number;
   recipeCookTime?: number;
   recipeBaseServings?: number;
   servings: number;

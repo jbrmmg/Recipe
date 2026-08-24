@@ -64,8 +64,6 @@ export class RecipeFormComponent implements OnInit {
     title: ['', [Validators.required, Validators.minLength(2)]],
     description: [''],
     baseServings: [4, [Validators.required, Validators.min(1)]],
-    prepTime: [null as number | null],
-    cookTime: [null as number | null],
     tagIds: [[] as number[]],
     ingredients: this.fb.array([]),
     prepSteps: this.fb.array([]),
@@ -102,8 +100,6 @@ export class RecipeFormComponent implements OnInit {
                 title: recipe.title,
                 description: recipe.description ?? '',
                 baseServings: recipe.baseServings,
-                prepTime: recipe.prepTime ?? null,
-                cookTime: recipe.cookTime ?? null,
                 tagIds: recipe.tags.map(t => t.id),
               });
               recipe.ingredients.forEach(ing => this.addIngredient(ing));
@@ -223,8 +219,8 @@ export class RecipeFormComponent implements OnInit {
       phase: 'PREP',
       stepOrder: idx + 1,
       description: s.description,
-      durationSeconds: s.durationMinutes ? Math.round(s.durationMinutes * 60) : 0,
-      timerRequired: s.timerRequired ?? false,
+      durationSeconds: 0,
+      timerRequired: false,
       parallelGroup: s.parallelGroup ?? undefined,
     }));
     const cookSteps = (v.cookSteps as any[]).map((s, idx) => ({
@@ -240,8 +236,6 @@ export class RecipeFormComponent implements OnInit {
       title: v.title!,
       description: v.description || undefined,
       baseServings: v.baseServings!,
-      prepTime: v.prepTime ?? undefined,
-      cookTime: v.cookTime ?? undefined,
       tagIds: v.tagIds ?? [],
       ingredients: (v.ingredients as any[]).map(i => ({
         ingredientId: (i.ingredient as Ingredient)?.id,

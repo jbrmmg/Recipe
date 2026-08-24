@@ -12,7 +12,6 @@ public class MealRecipeDto {
     private Long recipeId;
 
     private String recipeTitle;
-    private Integer recipePrepTime;
     private Integer recipeCookTime;
     private Integer recipeBaseServings;
 

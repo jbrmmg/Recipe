@@ -33,9 +33,6 @@ public class Recipe {
     @Column(name = "base_servings", nullable = false)
     private int baseServings;
 
-    @Column(name = "prep_time")
-    private Integer prepTime;
-
     @Column(name = "cook_time")
     private Integer cookTime;
 

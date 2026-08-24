@@ -23,7 +23,6 @@ public interface MealMapper {
 
     @Mapping(target = "recipeId",          source = "recipe.id")
     @Mapping(target = "recipeTitle",        source = "recipe.title")
-    @Mapping(target = "recipePrepTime",     source = "recipe.prepTime")
     @Mapping(target = "recipeCookTime",     source = "recipe.cookTime")
     @Mapping(target = "recipeBaseServings", source = "recipe.baseServings")
     MealRecipeDto toMealRecipeDto(MealRecipe mealRecipe);
