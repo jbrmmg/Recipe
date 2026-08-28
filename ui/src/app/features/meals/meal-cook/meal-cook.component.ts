@@ -160,32 +160,16 @@ export class MealCookComponent implements OnInit, OnDestroy {
   // Height in px of each column body (identical for all recipes)
   colBodyHeight = computed(() => Math.max(100, this.totalDurationSeconds() * this.ganttScale()));
 
-  // The running timer with the soonest remaining time (for the panel)
-  nextTimerInfo = computed<{ key: string; state: BlockTimerState; recipe: GanttRecipe; block: StepBlock } | null>(() => {
-    const running = this.runningKeys();
-    if (running.size === 0) return null;
+  // Recipes that have had any block timer started (used to detect early-start)
+  startedRecipeIds = computed<Set<number>>(() => {
     const timers = this.blockTimers();
-    let soonest: { key: string; state: BlockTimerState; recipe: GanttRecipe; block: StepBlock } | null = null;
+    const started = new Set<number>();
     for (const recipe of this.ganttRecipes()) {
       for (const block of recipe.blocks) {
-        if (!running.has(block.key)) continue;
-        const state = timers.get(block.key);
-        if (!state || state.done) continue;
-        if (!soonest || state.remaining < soonest.state.remaining) {
-          soonest = { key: block.key, state, recipe, block };
-        }
+        if (timers.has(block.key)) { started.add(recipe.recipeId); break; }
       }
     }
-    return soonest;
-  });
-
-  runningTimerCount = computed(() => this.runningKeys().size);
-
-  nextTimerDisplay = computed(() => {
-    const info = this.nextTimerInfo();
-    if (!info) return '00:00';
-    const r = info.state.remaining;
-    return `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+    return started;
   });
 
   // ── Lifecycle ────────────────────────────────────────────────────────
@@ -308,8 +292,35 @@ export class MealCookComponent implements OnInit, OnDestroy {
     this.blockTimers.set(states);
   }
 
+  // Resume a paused timer by key (for column-header controls)
+  resumeTimer(key: string) {
+    const state = this.blockTimers().get(key);
+    if (!state || state.done || this.timerHandles.has(key)) return;
+    const handle = setInterval(() => this.tickBlock(key), 1000);
+    this.timerHandles.set(key, handle);
+    const rk = new Set(this.runningKeys());
+    rk.add(key);
+    this.runningKeys.set(rk);
+  }
+
   getBlockTimer(key: string): BlockTimerState | null {
     return this.blockTimers().get(key) ?? null;
+  }
+
+  // Returns the soonest active (running or paused) timer for a recipe column
+  getColumnTimer(recipe: GanttRecipe): { key: string; running: boolean } | null {
+    const running = this.runningKeys();
+    const timers  = this.blockTimers();
+    let best: { key: string; running: boolean; remaining: number } | null = null;
+    for (const block of recipe.blocks) {
+      const state = timers.get(block.key);
+      if (!state || state.done) continue;
+      const isRunning = running.has(block.key);
+      if (!best || (isRunning && !best.running) || state.remaining < best.remaining) {
+        best = { key: block.key, running: isRunning, remaining: state.remaining };
+      }
+    }
+    return best ? { key: best.key, running: best.running } : null;
   }
 
   blockTimerDisplay(key: string): string {
@@ -317,6 +328,18 @@ export class MealCookComponent implements OnInit, OnDestroy {
     if (!state) return '';
     const r = state.remaining;
     return `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+  }
+
+  // When a non-critical recipe has been started, blocks shift to top of column
+  visualBlockTop(block: StepBlock, recipe: GanttRecipe, isStarted: boolean): number {
+    return isStarted && recipe.startOffset > 0
+      ? (block.absoluteStart - recipe.startOffset) * this.ganttScale()
+      : this.blockTop(block);
+  }
+
+  // Top of the "finishing early" gap (below the shifted blocks)
+  earlyGapTop(recipe: GanttRecipe): number {
+    return recipe.totalDuration * this.ganttScale();
   }
 
   private tickBlock(key: string) {
