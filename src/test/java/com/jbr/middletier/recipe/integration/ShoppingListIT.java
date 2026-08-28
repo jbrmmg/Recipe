@@ -1,5 +1,6 @@
 package com.jbr.middletier.recipe.integration;
 
+import com.jbr.middletier.recipe.RecipeApplication;
 import com.jbr.middletier.recipe.dto.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = RecipeApplication.class)
 @ActiveProfiles("it")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ShoppingListIT {

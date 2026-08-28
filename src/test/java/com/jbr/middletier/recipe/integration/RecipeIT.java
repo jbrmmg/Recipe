@@ -4,6 +4,7 @@ import com.jbr.middletier.recipe.dto.RecipeDetailDto;
 import com.jbr.middletier.recipe.dto.RecipeStepDto;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.jbr.middletier.recipe.RecipeApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -22,7 +23,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = RecipeApplication.class)
 @ActiveProfiles("it")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RecipeIT {
