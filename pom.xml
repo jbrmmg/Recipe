@@ -46,6 +46,7 @@
                 <version>${org.springframework.version}</version>
                 <configuration>
                     <executable>true</executable>
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>

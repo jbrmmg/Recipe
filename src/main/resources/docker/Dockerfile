@@ -3,7 +3,7 @@ WORKDIR /app
 
 RUN mkdir -p /app/logs /app/images
 
-COPY target/MiddleTier-Recipe-*.jar app.jar
+COPY target/MiddleTier-Recipe-*-exec.jar app.jar
 COPY scripts/docker-entrypoint.sh /app/scripts/docker-entrypoint.sh
 
 RUN chmod +x /app/scripts/docker-entrypoint.sh
