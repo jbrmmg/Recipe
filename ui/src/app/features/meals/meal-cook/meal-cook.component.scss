@@ -205,6 +205,14 @@
 .clock-total {
   font-size: 14px;
   color: rgba(0,0,0,0.45);
+  flex: 1;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Running timer panel (between clock bar and gantt) */

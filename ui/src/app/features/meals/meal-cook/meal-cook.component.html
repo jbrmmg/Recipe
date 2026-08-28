@@ -101,6 +101,14 @@
               <span class="clock-total">/ {{ formatDuration(totalDurationSeconds()) }}</span>
             }
           }
+          <div class="zoom-controls">
+            <button mat-icon-button (click)="zoomOut()" [disabled]="!canZoomOut()" title="Zoom out">
+              <mat-icon>zoom_out</mat-icon>
+            </button>
+            <button mat-icon-button (click)="zoomIn()" title="Zoom in">
+              <mat-icon>zoom_in</mat-icon>
+            </button>
+          </div>
         </div>
 
         <!-- Running timer panel: shows the soonest-to-finish running timer -->

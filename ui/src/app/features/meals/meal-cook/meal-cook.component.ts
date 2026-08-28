@@ -18,8 +18,8 @@ const RECIPE_COLORS = [
   { bg: '#fce4ec', text: '#c62828' },
 ];
 
-// px per second — all columns share this scale so heights are comparable
-const GANTT_SCALE = 2;
+// Fixed UI overhead above the gantt area (toolbar + main-header + clock-bar + padding)
+const GANTT_OVERHEAD_PX = 240;
 
 interface PrepStep { key: string; description: string; }
 interface PrepGroup { recipeId: number; title: string; color: { bg: string; text: string }; steps: PrepStep[]; }
@@ -81,7 +81,10 @@ export class MealCookComponent implements OnInit, OnDestroy {
   private timerHandles = new Map<string, ReturnType<typeof setInterval>>();
 
   private wakeLock: any = null;
-  readonly GANTT_SCALE = GANTT_SCALE;
+
+  // Zoom: 1 = fit plan to screen, >1 = taller (scrollable)
+  userZoom = signal(1);
+  canZoomOut = computed(() => this.userZoom() > 1.05);
 
   // ── Computed ─────────────────────────────────────────────────────────
 
@@ -146,8 +149,16 @@ export class MealCookComponent implements OnInit, OnDestroy {
     this.ganttRecipes().length === 0 ? 0 : Math.max(...this.ganttRecipes().map(r => r.startOffset + r.totalDuration))
   );
 
+  // px-per-second scale: at userZoom=1 the plan fits the visible gantt area exactly
+  ganttScale = computed(() => {
+    const total = this.totalDurationSeconds();
+    if (total === 0) return 2;
+    const available = Math.max(150, window.innerHeight - GANTT_OVERHEAD_PX);
+    return (available / total) * this.userZoom();
+  });
+
   // Height in px of each column body (identical for all recipes)
-  colBodyHeight = computed(() => Math.max(200, this.totalDurationSeconds() * GANTT_SCALE));
+  colBodyHeight = computed(() => Math.max(100, this.totalDurationSeconds() * this.ganttScale()));
 
   // The running timer with the soonest remaining time (for the panel)
   nextTimerInfo = computed<{ key: string; state: BlockTimerState; recipe: GanttRecipe; block: StepBlock } | null>(() => {
@@ -386,9 +397,12 @@ export class MealCookComponent implements OnInit, OnDestroy {
     return blocks;
   }
 
-  blockTop(block: StepBlock): number { return block.absoluteStart * GANTT_SCALE; }
-  blockHeight(block: StepBlock): number { return Math.max(40, block.durationSeconds * GANTT_SCALE); }
-  waitHeight(offsetSeconds: number): number { return offsetSeconds * GANTT_SCALE; }
+  blockTop(block: StepBlock): number    { return block.absoluteStart * this.ganttScale(); }
+  blockHeight(block: StepBlock): number  { return block.durationSeconds * this.ganttScale(); }
+  waitHeight(offsetSeconds: number): number { return offsetSeconds * this.ganttScale(); }
+
+  zoomIn()  { this.userZoom.update(z => Math.min(z * 1.5, 8)); }
+  zoomOut() { this.userZoom.update(z => Math.max(z / 1.5, 1)); }
 
   formatDuration(seconds: number): string {
     if (seconds <= 0) return '';
