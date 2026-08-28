@@ -69,6 +69,9 @@ jobs:
       - name: Compute version
         run: echo "VERSION=$(date +'%Y.%m.%d')-SNAPSHOT" >> $GITHUB_ENV
 
+      - name: Configure docker-java API version
+        run: echo 'api.version=1.41' > ~/.docker-java.properties
+
       - name: Build and Test with Maven
         env:
           DOCKER_HOST: unix:///var/run/docker.sock

@@ -56,6 +56,20 @@ mvn verify
 
 This builds the Angular app, runs unit and integration tests, and packages everything into a single jar.
 
+### Integration tests and Docker API version
+
+Integration tests use Testcontainers to spin up a MariaDB container. Testcontainers bundles its own shaded copy of docker-java, which defaults to Docker API version 1.32. Docker Engine 25+ raised its minimum accepted API version to 1.40, so running the tests against a modern Docker daemon fails with:
+
+> `client version 1.32 is too old. Minimum supported API version is 1.40`
+
+**Fix** — create `~/.docker-java.properties` in the home directory of whoever runs the tests (developer machine or CI runner):
+
+```properties
+api.version=1.41
+```
+
+This file is read automatically by docker-java on startup. The CI workflows (`build.yml`, `dev.yml`) create this file as a step before the Maven build, so no manual action is needed on the runner. On a developer machine, create it once and it will apply to all projects (Money, Backup, etc.) that use Testcontainers.
+
 ## Docker
 
 The app runs as a single container. In production it sits on the shared `jbr-network` Docker network, behind the shared nginx reverse proxy at `/recipe/`.
